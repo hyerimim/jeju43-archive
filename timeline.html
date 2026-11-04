@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>4·3의 시간 | 제주 4·3 디지털 아카이브</title>
+<meta name="description" content="1947년부터 1954년까지, 제주 4·3 사건의 흐름을 연도별로 되짚어봅니다.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;700;900&family=Noto+Serif+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css?v=3">
+<style>
+  .page-title{
+    margin: 4px 24px 0;
+    font-weight:800;
+    font-size: 28px;
+    letter-spacing:-0.5px;
+    color: var(--ink);
+  }
+
+  /* ---------- Stat row (고정, 연도와 무관) ---------- */
+  .stat-row{
+    display:flex;
+    margin: 12px 24px 0;
+    gap: 22px;
+  }
+  .stat .label{
+    font-size: 11px;
+    line-height:1.45;
+    color: var(--ink-soft);
+    margin-bottom:4px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .stat .value{
+    font-size: 14.5px;
+    line-height:1.45;
+    font-weight:700;
+    letter-spacing:-0.2px;
+  }
+
+  /* ---------- Photo (연도별 사진, 없으면 placeholder 색이 그대로 보인다) ---------- */
+  .photo-ph{
+    position:relative;
+    margin: 12px 24px 0;
+    height: 182px;
+    border-radius: 14px;
+    overflow:hidden;
+    background: var(--placeholder);
+  }
+  .photo-ph img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    opacity:0;
+    transition: opacity .25s ease;
+  }
+  .photo-ph img:not([src]){ display:none; } /* 사진이 없을 때 깨진 이미지 아이콘이 보이지 않도록 */
+  .photo-ph img.loaded{ opacity:1; }
+
+  /* ---------- Year feature ---------- */
+  .year-big{
+    margin: 11px 24px 0;
+    text-align:center;
+    color: var(--maroon);
+    font-weight:700;
+    font-size: 25px;
+    letter-spacing: 0.5px;
+  }
+  .event-title{
+    margin: 6px 24px 0;
+    height: 55px;
+    text-align:center;
+    font-weight:800;
+    font-size: 21px;
+    line-height:1.3;
+    letter-spacing:-0.3px;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    -webkit-box-pack:center;
+    overflow:hidden;
+  }
+  .event-desc{
+    margin: 9px 24px 0;
+    padding-right: 8px;
+    height: 150px;
+    overflow-y: auto;
+    font-size: 13px;
+    line-height:1.7;
+    color: var(--ink);
+    scrollbar-width: thin;
+    scrollbar-color: #c9a49c rgba(138,63,54,0.07);
+  }
+  .event-desc::-webkit-scrollbar{ width:5px; }
+  .event-desc::-webkit-scrollbar-track{ background: rgba(138,63,54,0.07); border-radius: 999px; }
+  .event-desc::-webkit-scrollbar-thumb{ background: rgba(138,63,54,0.45); border-radius: 999px; }
+  /* 영어 번역이 한글보다 길어 상자를 넘치는 연도들이 있어, 스크롤 없이 다 들어오도록 글자 크기를 줄인다 */
+  body.lang-en .event-desc{ font-size: 12px; line-height: 1.6; }
+
+  /* ---------- 동백꽃 슬라이더: 스크롤바 손잡이처럼 선 위의 실제 위치가 연도를 나타낸다 ---------- */
+  .timeline-track{
+    position:relative;
+    margin: 10px 24px 0;
+    height: 40px;
+  }
+  .timeline-track::before{
+    content:"";
+    position:absolute;
+    left:0; right:0; top:50%;
+    height:1px;
+    background: var(--line);
+    transform: translateY(-50%);
+    pointer-events:none;
+  }
+  .flower-handle{
+    position:absolute;
+    top:50%;
+    left:0;
+    width:40px; height:40px;
+    transform: translate(-50%,-50%);
+    cursor: grab;
+    touch-action: none;
+    z-index:2;
+  }
+  .flower-handle:active{ cursor: grabbing; }
+  .flower-handle img{
+    width:100%;
+    height:auto;
+    display:block;
+    pointer-events:none;
+    filter: drop-shadow(0 4px 8px rgba(58,68,41,0.35));
+  }
+
+  /* ---------- Year list (현재 연도 표시, 동백꽃을 밀면 함께 이동) ---------- */
+  .year-list{
+    display:flex;
+    justify-content:space-between;
+    margin: 10px 24px 18px;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+  }
+  .year-list span{
+    padding: 4px 2px;
+  }
+  .year-list span.active{
+    color: var(--maroon);
+    font-weight:700;
+  }
+  .year-list span.active::before{ content:"["; }
+  .year-list span.active::after{ content:"]"; }
+
+</style>
+</head>
+<body>
+<div id="stage">
+<div class="screen" id="screen">
+
+  <!-- Header -->
+  <header class="header">
+    <img class="mark" src="assets/camellia-mark.png" alt="">
+    <span class="title">제주 4·3 디지털 아카이브</span>
+    <div class="lang-wrap">
+      <button class="lang-btn" id="langBtn" aria-label="언어 선택">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.5 3.8 5.5 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.5-3.8-9S9.5 5.5 12 3Z"/></svg>
+      </button>
+      <div class="lang-dropdown" id="langDropdown"></div>
+    </div>
+    <a class="home-btn" href="index.html" aria-label="홈으로">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg>
+    </a>
+  </header>
+
+  <h1 class="page-title" id="pageTitle">4·3의 시간</h1>
+
+  <!-- Stat row: 항상 고정 -->
+  <div class="stat-row">
+    <div class="stat">
+      <div class="label" id="statLabel1">시작</div>
+      <div class="value">1947.3.1</div>
+    </div>
+    <div class="stat">
+      <div class="label" id="statLabel2">무장봉기</div>
+      <div class="value">1948.4.3.</div>
+    </div>
+    <div class="stat">
+      <div class="label" id="statLabel3">공식종료</div>
+      <div class="value">1954.9.21.</div>
+    </div>
+  </div>
+
+  <!-- 사진: 연도별로 assets/years/연도.jpg(또는 .png)를 넣으면 자동으로 표시된다. 없으면 placeholder 색이 그대로 보인다. -->
+  <div class="photo-ph" id="photoPh">
+    <img id="photoImg" alt="">
+  </div>
+
+  <!-- 선택된 연도의 사건 -->
+  <div class="year-big" id="yearBig">1947</div>
+  <h2 class="event-title" id="eventTitle">3·1사건, 총성이 울리다</h2>
+  <p class="event-desc" id="eventDesc">3.1절 기념대회에서 경찰의 발포로 주민 6명이 희생되었다. 이후 사건에 항의하는 민·관 총파업이 이어지며 제주 사회의 갈등이 깊어졌다. 이 사건은 이후 4.3으로 이어지는 중요한 계기가 되었다.</p>
+
+  <!-- 동백꽃(스크롤바 손잡이)을 선 위에서 자유롭게 밀어 연도를 넘긴다: 맨 왼쪽 = 1947, 맨 오른쪽 = 1954 -->
+  <div class="timeline-track" id="timelineTrack">
+    <div class="flower-handle" id="flowerHandle">
+      <img src="assets/camellia-bloom.png" alt="">
+    </div>
+  </div>
+
+  <!-- 연도 목록: 현재 연도가 [ ] + 갈색으로 표시됨 (동백꽃과 함께 이동) -->
+  <div class="year-list">
+    <span>1947</span>
+    <span>1948</span>
+    <span>1949</span>
+    <span>1950</span>
+    <span>1951</span>
+    <span>1952</span>
+    <span>1953</span>
+    <span>1954</span>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="kr">제주 4·3 디지털 아카이브</div>
+    <div class="en">JEJU 4·3 DIGITAL ARCHIVE</div>
+    <p class="msg">제주대학교<br>4·3의 기록과 기억을 보존하고<br>다음 세대에 전합니다.</p>
+    <div class="univ">@ JEJU NATIONAL UNIVERSITY</div>
+    <img class="bloom" src="assets/camellia-line.png" alt="">
+  </footer>
+
+</div>
+</div>
+
+<script src="assets/fit-screen.js"></script>
+<script src="assets/lang-switch.js?v=3"></script>
+<script>
+  // 언어별 제목/설명. 기계번역 초안이라 공개 전 원어민 검수를 권장한다.
+  const YEARS = [
+    { y: 1947,
+      ko: { title: "3·1사건, 총성이 울리다", desc: "1947년 3월 1일, 경찰의 발포로 주민 6명이 사망하고 8명이 부상당하는 3·1사건이 발생했다. 이에 항의하는 민·관 총파업이 제주도 전역으로 확산되었고, 미군정과 경찰은 파업 참가자들을 대규모로 검거했다.\n\n5월에는 3·1사건 관련자 328명에 대한 재판이 마무리되었다. 이후 미군정의 좌파 세력 검거와 우익 청년단체의 활동이 이어지면서 제주 사회의 좌우익 갈등과 긴장이 더욱 심화되었다." },
+      en: { title: "The March 1st Incident: Gunshots Ring Out", desc: "On March 1, 1947, police gunfire killed six residents and wounded eight others in the March 1st Incident. A joint civilian-official general strike protesting the incident spread across Jeju Island, and the U.S. military government and police carried out mass arrests of strike participants.\n\nIn May, the trial of 328 people charged in connection with the March 1st Incident concluded. Afterward, as the U.S. military government's crackdown on leftist forces and the activities of right-wing youth groups continued, the conflict and tension between left and right in Jeju society deepened further." },
+      zh: { title: "3·1事件，枪声响起", desc: "1947年3月1日，警察开枪导致6名居民死亡、8人受伤，引发3·1事件。抗议该事件的军民总罢工扩散至济州岛全境，美军政厅与警方对罢工参与者展开大规模搜捕。\n\n5月，与3·1事件相关的328人受审一案审理终结。此后，美军政厅对左翼势力的搜捕行动与右翼青年团体的活动持续进行，济州社会左右翼之间的矛盾与紧张进一步加深。" },
+      ja: { title: "3·1事件、銃声が鳴り響く", desc: "1947年3月1日、警察の発砲により住民6人が死亡、8人が負傷する3·1事件が発生した。これに抗議する民官総罷業が済州島全域に広がり、米軍政と警察はストライキ参加者を大規模に検挙した。\n\n5月には3·1事件関連者328人に対する裁判が終結した。その後、米軍政による左派勢力の検挙と右翼青年団体の活動が続き、済州社会における左右対立と緊張はさらに深まった。" } },
+    { y: 1948,
+      ko: { title: "제주4·3 무장봉기 발발", desc: "1948년 2월, 남한 단독선거에 반대하는 움직임이 확산되었고, 남로당 제주도당은 무장투쟁을 결정했다.\n\n4월 3일, 무장대가 제주도 내 경찰지서와 우익단체 관계자들의 집을 공격하면서 제주4·3사건이 본격적으로 시작되었다. 평화협상이 진행되기도 했으나 5월 오라리 방화사건으로 협상이 결렬되었고, 진압작전이 강화되었다.\n\n8월 15일 대한민국 정부가 수립된 뒤에도 무력 충돌은 계속되었다. 10월, 해안에서 5km 이상 떨어진 중산간 지역의 통행을 금지하는 포고령이 내려졌고, 11월 17일 제주도 전역에 계엄령이 선포되었다.\n\n이후 토벌대의 초토화 작전이 본격화되면서 중산간 마을의 가옥이 불타고 수많은 주민이 집단 희생되었다." },
+      en: { title: "The Jeju 4·3 Armed Uprising Breaks Out", desc: "In February 1948, opposition to the separate elections in South Korea spread, and the Jeju branch of the South Korean Labor Party decided on armed struggle.\n\nOn April 3, armed insurgents attacked police substations and the homes of right-wing organization members across Jeju, marking the full-scale start of the Jeju 4·3 Incident. Peace negotiations were attempted, but they broke down after the Orari arson incident in May, and suppression operations intensified.\n\nEven after the government of the Republic of Korea was established on August 15, armed conflict continued. In October, a decree was issued banning passage through mid-mountain areas more than 5km from the coast, and on November 17, martial law was declared across Jeju Island.\n\nAfterward, as the suppression forces' scorched-earth operations intensified, houses in mid-mountain villages were burned down and large numbers of residents were killed en masse." },
+      zh: { title: "济州4·3武装起义爆发", desc: "1948年2月，反对南韩单独选举的运动扩散，南劳党济州岛党部决定发动武装斗争。\n\n4月3日，武装队袭击济州岛内的警察支署及右翼团体相关人员的住宅，济州4·3事件正式爆发。虽曾进行和平谈判，但因5月发生的吾罗里纵火事件而谈判破裂，镇压行动随之加强。\n\n8月15日大韩民国政府成立后，武力冲突仍在继续。10月，当局颁布禁止通行距海岸5公里以上中山间地区的布告令，11月17日济州岛全境宣布戒严。\n\n此后，讨伐队的焦土作战全面展开，中山间村庄的房屋被焚毁，大批居民惨遭集体杀害。" },
+      ja: { title: "済州4·3武装蜂起勃発", desc: "1948年2月、南韓単独選挙に反対する動きが広がり、南労党済州島党は武装闘争を決定した。\n\n4月3日、武装隊が済州島内の警察支署と右翼団体関係者の家を襲撃し、済州4·3事件が本格的に始まった。平和交渉も行われたが、5月の吾羅里放火事件により交渉は決裂し、鎮圧作戦が強化された。\n\n8月15日に大韓民国政府が樹立された後も武力衝突は続いた。10月、海岸から5km以上離れた中山間地域の通行を禁止する布告令が出され、11月17日には済州島全域に戒厳令が宣布された。\n\nその後、討伐隊による焦土作戦が本格化し、中山間村落の家屋が焼かれ、多くの住民が集団犠牲となった。" } },
+    { y: 1949,
+      ko: { title: "토벌대에 의한 '북촌사건' 발생", desc: "1949년 1월, 토벌대는 중산간 마을에 대한 진압을 이어갔으며, 1월 17일 북촌리에서 주민 약 400명을 집단 총살하는 북촌사건이 발생했다.\n\n이후 군경의 토벌작전과 주민 희생이 계속되었고, 2월에는 봉개지구 합동작전으로 수많은 주민이 희생되었다. 3월에는 제주도지구전투사령부가 설치되어 진압작전이 이어졌다.\n\n5월에는 제주도 국회의원 재선거가 실시되었고, 6월 무장대 총사령 이덕구가 사살되었다. 6월부터 7월까지 군법회의에서 민간인들이 대거 유죄판결을 받았으며, 10월에는 제주비행장 인근에서 사형이 선고된 249명이 총살되었다." },
+      en: { title: "Suppression Forces Carry Out the 'Bukchon Incident'", desc: "In January 1949, suppression forces continued their crackdown on mid-mountain villages, and on January 17, the Bukchon Incident occurred, in which about 400 residents of Bukchon-ri were shot and killed en masse.\n\nSuppression operations by the military and police and the resulting civilian deaths continued afterward; in February, a joint operation in the Bonggae district claimed many more residents' lives. In March, the Jeju Island District Combat Command was established, and suppression operations continued.\n\nIn May, a by-election for Jeju's National Assembly seat was held, and in June, Lee Deok-gu, the commander-in-chief of the armed insurgents, was killed. From June to July, civilians were convicted en masse by military tribunals, and in October, 249 people sentenced to death were executed near Jeju Airport." },
+      zh: { title: "镇压部队制造'北村事件'", desc: "1949年1月，讨伐队持续对中山间村庄进行镇压，1月17日在北村里发生集体枪杀约400名居民的北村事件。\n\n此后军警的讨伐行动与居民伤亡持续发生，2月奉盖地区联合行动导致众多居民遇难。3月设立济州岛地区战斗司令部，镇压行动持续进行。\n\n5月举行济州岛国会议员补选，6月武装队总司令李德九被击毙。6月至7月间，军事法庭对大批平民判处有罪，10月在济州机场附近，249名被判处死刑者遭枪决。" },
+      ja: { title: "討伐隊による「北村事件」発生", desc: "1949年1月、討伐隊は中山間村落への鎮圧を続け、1月17日には北村里で住民約400人を集団銃殺する北村事件が発生した。\n\nその後も軍警の討伐作戦と住民犠牲が続き、2月には鳳蓋地区合同作戦で多くの住民が犠牲となった。3月には済州島地区戦闘司令部が設置され、鎮圧作戦が続いた。\n\n5月には済州島国会議員再選挙が実施され、6月に武装隊総司令の李徳九が射殺された。6月から7月にかけて軍法会議で民間人が大量に有罪判決を受け、10月には済州飛行場付近で死刑を宣告された249人が銃殺された。" } },
+    { y: 1950,
+      ko: { title: "예비검속과 집단학살", desc: "1950년 6·25전쟁이 발발하자 제주에서는 보도연맹원과 요시찰인 등을 대상으로 예비검속과 구금이 이루어졌다. 7월부터 8월까지 제주항 앞바다와 제주비행장, 섯알오름 등에서 예비검속자들이 집단적으로 희생되었다.\n\n특히 섯알오름에서 희생된 주민들의 유해는 수습이 늦어져 1956년에야 발굴되었으며, 유족들은 여러 희생자의 유골을 함께 안장하고 **'백조일손지묘'**라 이름 붙였다. 한편 문형순 성산포경찰서장은 부당한 총살 명령을 거부했다. 9월 인천상륙작전 이후 예비검속자 석방이 시작되었고, 10월에는 제주도 계엄령이 해제되었다." },
+      en: { title: "Preventive Detention and Mass Killings", desc: "When the Korean War broke out in 1950, members of the Bodo League and others under police surveillance in Jeju were subjected to preventive detention and imprisonment. From July to August, those held under preventive detention were killed en masse at sites including the waters off Jeju Port, Jeju Airport, and Seotal Oreum.\n\nIn particular, the remains of those killed at Seotal Oreum were not recovered until 1956, and bereaved families buried the remains of multiple victims together in a single grave, naming it **\"Baekjoilsonjimyo\"** (the Tomb of One Hundred Ancestors and One Descendant). Meanwhile, Moon Hyung-soon, the chief of Seongsanpo Police Station, refused an unjust order to carry out executions. Following the Incheon Landing Operation in September, the release of those held under preventive detention began, and in October, martial law on Jeju Island was lifted." },
+      zh: { title: "预防性拘捕与集体屠杀", desc: "1950年6·25战争爆发后，济州地区以保导联盟成员及重点监视对象等为目标，实施了预防性拘捕与拘禁。7月至8月间，被预防性拘捕者在济州港外海、济州机场、炆岳峰等地遭到集体杀害。\n\n尤其在炆岳峰遇难的居民遗骸，因收殓延迟，直至1956年才被发掘，遗属们将多名遇难者的遗骨合葬，并命名为**\"百祖一孙之墓\"**。与此同时，城山浦警察署长文亨淳拒绝执行不当的枪决命令。9月仁川登陆作战后，预防性拘捕者开始获释，10月济州岛戒严令解除。" },
+      ja: { title: "予備検束と集団虐殺", desc: "1950年、6·25戦争が勃発すると、済州では保導連盟員や要視察人などを対象に予備検束と拘禁が行われた。7月から8月にかけて、済州港沖や済州飛行場、ソッタルオルムなどで予備検束者が集団的に犠牲となった。\n\n特にソッタルオルムで犠牲になった住民の遺骸は収拾が遅れ、1956年になってようやく発掘された。遺族たちは複数の犠牲者の遺骨を合わせて埋葬し、**「百祖一孫之墓」**と名付けた。一方、文亨淳城山浦警察署長は不当な銃殺命令を拒否した。9月の仁川上陸作戦の後、予備検束者の釈放が始まり、10月には済州島の戒厳令が解除された。" } },
+    { y: 1951,
+      ko: { title: "피난민 유입과 군사기지화", desc: "1951년 1월, 육군 제1훈련소가 대구에서 제주도로 이전하면서 제주도의 군사적 역할이 커졌다. 5월에는 제주도 육군 특무대가 창설되었으며, 당시 제주도에 유입된 피난민은 약 14만 8천 명으로 집계되었다.\n\n한편 무장대와 토벌대의 충돌도 이어졌다. 제주 경찰은 1950년 10월부터 1951년 4월까지의 작전에서 무장대 사살과 무기 노획 등의 전과를 발표했으며, 이 과정에서 경찰과 자위대, 민간인 피해도 발생했다." },
+      en: { title: "Influx of Refugees and Militarization", desc: "In January 1951, the Army's 1st Training Center relocated from Daegu to Jeju Island, expanding Jeju's military role. In May, the Jeju Army Counter-Intelligence Corps was established, and the number of refugees who had flowed into Jeju at the time was recorded at about 148,000.\n\nMeanwhile, clashes between armed insurgents and suppression forces continued. The Jeju police announced results from operations conducted between October 1950 and April 1951, including insurgents killed and weapons seized, and in the process, police, local self-defense forces, and civilians also suffered casualties." },
+      zh: { title: "避难民涌入与军事基地化", desc: "1951年1月，陆军第1训练所由大邱迁至济州岛，济州岛的军事地位随之提升。5月济州岛陆军特务队成立，当时涌入济州岛的避难民约达14万8千人。\n\n与此同时，武装队与讨伐队的冲突仍在持续。济州警方公布了1950年10月至1951年4月作战期间击毙武装队员、缴获武器等战果，在此过程中警察、自卫队及平民也蒙受损失。" },
+      ja: { title: "避難民の流入と軍事基地化", desc: "1951年1月、陸軍第1訓練所が大邱から済州島へ移転し、済州島の軍事的役割が高まった。5月には済州島陸軍特務隊が創設され、当時済州島に流入した避難民は約14万8千人に上った。\n\n一方、武装隊と討伐隊の衝突も続いた。済州警察は1950年10月から1951年4月までの作戦で、武装隊の射殺や武器鹵獲などの戦果を発表したが、この過程で警察や自衛隊、民間人の被害も発生した。" } },
+    { y: 1952,
+      ko: { title: "잔여 무장대 진압 지속", desc: "1952년 제주에서는 잔여 무장대를 소탕하기 위한 진압작전이 계속되었다. 4월에는 제주도지구 잔비섬멸작전이 전개되었고, 5월 제주도의회는 무장대가 귀순하면 생명을 보장한다는 내용의 하산권고문을 반포하기로 의결했다.\n\n한편 무장대는 9월 제주방송국에 침입해 직원들을 납치하고, 10월에는 서귀포발전소를 습격해 불을 지르는 등 활동을 이어갔다. 11월에는 제주도경찰국 산하 100전투경찰사령부가 창설되면서 무장대 진압을 위한 경찰의 대응도 강화되었다." },
+      en: { title: "Suppression of the Remaining Insurgents Continues", desc: "In 1952, suppression operations to wipe out the remaining armed insurgents in Jeju continued. In April, the Jeju District Residual Bandit Extermination Operation was carried out, and in May, the Jeju Provincial Council resolved to issue a proclamation guaranteeing the lives of insurgents who surrendered and came down from the mountains.\n\nMeanwhile, the armed insurgents continued their activities, breaking into the Jeju Broadcasting Station in September and abducting staff, and raiding and setting fire to the Seogwipo Power Plant in October. In November, the 100th Combat Police Headquarters was established under the Jeju Provincial Police Bureau, strengthening the police response to suppress the insurgents." },
+      zh: { title: "持续镇压残余武装队", desc: "1952年济州地区为清剿残余武装队，镇压行动持续进行。4月展开济州岛地区残匪歼灭作战，5月济州道议会议决颁布劝降文，承诺武装队归顺后保障其生命安全。\n\n与此同时，武装队9月闯入济州广播局绑架职员，10月袭击西归浦发电所并纵火，活动仍在持续。11月济州道警察局下设的100战斗警察司令部成立，警方对武装队的镇压应对进一步加强。" },
+      ja: { title: "残余武装隊の鎮圧続く", desc: "1952年、済州では残余武装隊を掃討するための鎮圧作戦が続いた。4月には済州島地区残匪殲滅作戦が展開され、5月の済州道議会は、武装隊が帰順すれば生命を保障するという下山勧告文を頒布することを議決した。\n\n一方、武装隊は9月に済州放送局に侵入して職員を拉致し、10月には西帰浦発電所を襲撃して放火するなど活動を続けた。11月には済州道警察局傘下に100戦闘警察司令部が創設され、武装隊鎮圧に向けた警察の対応も強化された。" } },
+    { y: 1953,
+      ko: { title: "무장대 토벌 작전 종료와 주민 복귀 및 치안 안정화", desc: "1953년 1월, 육군 특수부대인 무지개부대 86명이 제주에 투입되어 무장대 진압작전을 벌였으며, 5월 작전을 종료했다. 이후 다른 지역에서 파견된 경찰 병력이 철수하고, 11월에는 일부 지역의 주민들이 오랜 소개생활을 끝내고 마을로 돌아오기 시작했다.\n\n같은 달 제주도경찰국은 도내 경찰주둔소의 경비초소 병력을 철수한다고 발표했다. 그러나 주민들의 복귀와 마을 재건은 이후에도 계속되어야 했다." },
+      en: { title: "Suppression Ends, Residents Return, Security Stabilizes", desc: "In January 1953, 86 members of the Army's special Rainbow Unit were deployed to Jeju to carry out suppression operations against the armed insurgents, concluding the operation in May. Afterward, police forces dispatched from other regions withdrew, and in November, residents of some areas began returning to their villages after a long period of evacuation.\n\nThat same month, the Jeju Provincial Police Bureau announced the withdrawal of guard posts at police outposts across the island. However, the return of residents and the reconstruction of villages had to continue afterward." },
+      zh: { title: "武装队讨伐行动结束、居民归乡与治安稳定", desc: "1953年1月，陆军特种部队彩虹部队86人被投入济州，执行武装队镇压作战，并于5月结束作战。此后从外地派遣的警力撤离，11月部分地区居民结束长期疏散生活，开始返回村庄。\n\n同月，济州道警察局宣布撤离岛内警察驻屯所的警备哨所警力。然而，居民的归乡与村庄重建此后仍需持续推进。" },
+      ja: { title: "武装隊討伐作戦の終了と住民帰還・治安安定化", desc: "1953年1月、陸軍特殊部隊である虹部隊86人が済州に投入され、武装隊鎮圧作戦を行い、5月に作戦を終了した。その後、他地域から派遣された警察兵力が撤収し、11月には一部地域の住民が長い疎開生活を終えて村に戻り始めた。\n\n同月、済州道警察局は島内の警察駐屯所の警備哨所の兵力を撤収すると発表した。しかし住民の帰還と村の再建はその後も続けられる必要があった。" } },
+    { y: 1954,
+      ko: { title: "한라산 금족구역 해제", desc: "1954년 1월, 제주도경찰국은 잔여 무장대가 6명뿐이라고 발표했다. 4월에는 한라산이 부분 개방되어 산간마을 주민들의 입주와 복귀가 허용되었다.\n\n9월 21일에는 한라산 금족구역이 해제되면서 제주4·3사건 이후 이어졌던 출입 통제가 공식적으로 풀렸다. 이는 주민들의 일상 회복과 마을 재건을 향한 중요한 전환점이 되었다." },
+      en: { title: "The Off-Limits Zone on Mt. Halla Is Lifted", desc: "In January 1954, the Jeju Provincial Police Bureau announced that only six armed insurgents remained. In April, Mt. Halla was partially opened, allowing residents of mountain villages to move back in and return.\n\nOn September 21, the off-limits zone on Mt. Halla was lifted, officially ending the access restrictions that had continued since the Jeju 4·3 Incident. This became an important turning point toward the restoration of residents' daily lives and the reconstruction of villages." },
+      zh: { title: "汉拿山禁足区解除", desc: "1954年1月，济州道警察局宣布残余武装队仅剩6人。4月汉拿山部分开放，山间村庄居民获准入住与返乡。\n\n9月21日，汉拿山禁足区解除，济州4·3事件以来持续的出入管制正式解除。这成为居民恢复日常生活与村庄重建的重要转折点。" },
+      ja: { title: "漢拏山禁足区域の解除", desc: "1954年1月、済州道警察局は残余武装隊がわずか6人であると発表した。4月には漢拏山が部分的に開放され、山間村落の住民の入居と帰還が許可された。\n\n9月21日には漢拏山禁足区域が解除され、済州4·3事件以降続いていた立ち入り規制が正式に解かれた。これは住民の日常回復と村の再建に向けた重要な転換点となった。" } }
+  ];
+
+  const STAT_LABELS = {
+    ko: ["시작", "무장봉기", "공식종료"],
+    en: ["Began", "Armed Uprising", "Officially Ended"],
+    zh: ["开始", "武装起义", "正式结束"],
+    ja: ["開始", "武装蜂起", "公式終了"]
+  };
+  const PAGE_TITLE = { ko: "4·3의 시간", en: "The Time of 4·3", zh: "4·3的时间", ja: "4·3の時間" };
+  let currentLang = "ko";
+
+  const trackEl = document.getElementById("timelineTrack");
+  const handleEl = document.getElementById("flowerHandle");
+  const yearBig = document.getElementById("yearBig");
+  const eventTitle = document.getElementById("eventTitle");
+  const eventDesc = document.getElementById("eventDesc");
+  const yearListEls = Array.from(document.querySelectorAll(".year-list span"));
+  const photoImg = document.getElementById("photoImg");
+
+  const HANDLE = 40; // .flower-handle 크기(px)와 동일하게
+  const STOPS = YEARS.length;
+  let current = 0;
+
+  // 연도 사진: assets/years/연도.jpg 를 먼저 찾고, 없으면 .png, .jpeg 순서로 시도한다.
+  // 셋 다 없으면 사진 없이 placeholder 색이 그대로 보인다.
+  const PHOTO_EXTS = ["jpg", "png", "jpeg"];
+  function setPhoto(year) {
+    photoImg.classList.remove("loaded");
+    let i = 0;
+    function tryNext() {
+      if (i >= PHOTO_EXTS.length) {
+        photoImg.removeAttribute("src");
+        return;
+      }
+      photoImg.src = "assets/years/" + year + "." + PHOTO_EXTS[i];
+      i += 1;
+    }
+    photoImg.onerror = tryNext;
+    photoImg.onload = function () {
+      photoImg.classList.add("loaded");
+      if (window.__fitScreen) window.__fitScreen();
+    };
+    tryNext();
+  }
+
+  // **강조** → <strong>강조</strong>, 줄바꿈(문단 구분) → <br><br>
+  function formatDesc(text) {
+    const escaped = text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    return escaped
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\n\n/g, "<br><br>");
+  }
+
+  // index 0 → 선의 맨 왼쪽(꽃 왼쪽 끝이 트랙 시작에 닿음), 마지막 index → 맨 오른쪽
+  function stopLeft(index) {
+    const usable = trackEl.clientWidth - HANDLE;
+    return HANDLE / 2 + usable * (index / (STOPS - 1));
+  }
+
+  function setHandleLeft(px, animate) {
+    handleEl.style.transition = animate ? "left .22s cubic-bezier(.3,.7,.4,1)" : "none";
+    handleEl.style.left = px + "px";
+  }
+
+  function applyYear(index) {
+    current = index;
+    const d = YEARS[index];
+    const t = d[currentLang] || d.ko;
+    yearBig.textContent = d.y;
+    eventTitle.textContent = t.title;
+    eventDesc.innerHTML = formatDesc(t.desc);
+    eventDesc.scrollTop = 0;
+    yearListEls.forEach(function (el, i) {
+      el.classList.toggle("active", i === index);
+    });
+    setPhoto(d.y);
+    if (window.__fitScreen) window.__fitScreen();
+  }
+
+  window.__applyLanguage = function (lang) {
+    currentLang = lang;
+    document.getElementById("pageTitle").textContent = PAGE_TITLE[lang] || PAGE_TITLE.ko;
+    const labels = STAT_LABELS[lang] || STAT_LABELS.ko;
+    document.getElementById("statLabel1").textContent = labels[0];
+    document.getElementById("statLabel2").textContent = labels[1];
+    document.getElementById("statLabel3").textContent = labels[2];
+    applyYear(current);
+  };
+
+  let dragging = false;
+
+  // 스크롤바 손잡이처럼, 포인터 위치를 선 위의 실제 좌표로 그대로 변환한다(화면 축소와 무관하게 항상 정확).
+  function localXFromClientX(clientX) {
+    const rect = trackEl.getBoundingClientRect();
+    const frac = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    return frac * trackEl.clientWidth;
+  }
+
+  handleEl.addEventListener("pointerdown", function (e) {
+    dragging = true;
+    handleEl.setPointerCapture(e.pointerId);
+    handleMove(e.clientX);
+  });
+
+  handleEl.addEventListener("pointermove", function (e) {
+    if (!dragging) return;
+    handleMove(e.clientX);
+  });
+
+  function handleMove(clientX) {
+    const raw = localXFromClientX(clientX);
+    const usable = trackEl.clientWidth - HANDLE;
+    const clamped = Math.max(HANDLE / 2, Math.min(trackEl.clientWidth - HANDLE / 2, raw));
+    setHandleLeft(clamped, false);
+
+    const frac = (clamped - HANDLE / 2) / usable;
+    const idx = Math.round(frac * (STOPS - 1));
+    if (idx !== current) applyYear(idx);
+  }
+
+  function endDrag() {
+    if (!dragging) return;
+    dragging = false;
+    setHandleLeft(stopLeft(current), true); // 가장 가까운 연도 자리로 자연스럽게 정착
+  }
+  handleEl.addEventListener("pointerup", endDrag);
+  handleEl.addEventListener("pointercancel", endDrag);
+
+  window.addEventListener("resize", function () {
+    if (!dragging) setHandleLeft(stopLeft(current), false);
+  });
+
+  // 동백꽃은 항상 1947년(맨 왼쪽)에서 시작한다.
+  setHandleLeft(stopLeft(0), false);
+  applyYear(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>그때, 제주대학교 | 제주 4·3 디지털 아카이브</title>
+<meta name="description" content="1960년부터 오늘까지, 제주대학교 학생들이 이어온 4·3 진상규명운동의 기록입니다.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;700;900&family=Noto+Serif+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css?v=3">
+<style>
+  .page-title{
+    margin: 6px 24px 0;
+    font-weight:800;
+    font-size: 28px;
+    letter-spacing:-0.5px;
+    color: var(--ink);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  /* ---------- Tab toggle: 1952 그때 / 오늘 우리는 (누르면 배경이 스르륵 슬라이드) ---------- */
+  .tab-toggle{
+    position:relative;
+    margin: 20px 24px 0;
+    display:flex;
+    background: transparent;
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    padding: 4px;
+    gap:4px;
+  }
+  .tab-thumb{
+    position:absolute;
+    top:4px; bottom:4px; left:4px;
+    width: calc(50% - 6px); /* 버튼 2개 + 4px 간격 + 4px 안쪽 여백을 정확히 계산 (테두리를 넘지 않음) */
+    background: var(--maroon);
+    border-radius: 999px;
+    transform: translateX(0);
+    transition: transform .32s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 4px 10px -4px rgba(138,63,54,0.5);
+  }
+  .tab-thumb.pos-1{
+    transform: translateX(calc(100% + 4px));
+  }
+  .tab-toggle button{
+    position:relative;
+    z-index:1;
+    flex:1;
+    border:0;
+    background:transparent;
+    border-radius:999px;
+    padding: 11px 0;
+    font-family: "Noto Serif KR", "Noto Serif JP", serif;
+    font-size:13.5px;
+    font-weight:400;
+    color: var(--ink-soft);
+    cursor:pointer;
+    transition: color .32s ease;
+  }
+  .tab-toggle button.active{
+    color: #fff;
+  }
+
+  /* ---------- Photo: 항목(연도)마다 사진 한 장. 없으면 placeholder 색이 그대로 보인다 ---------- */
+  .photo-ph{
+    position:relative;
+    margin: 22px 24px 0;
+    height: 235px;
+    border-radius:14px;
+    overflow:hidden;
+    background:var(--placeholder);
+  }
+  .photo-ph img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    opacity:0;
+    transition: opacity .25s ease;
+  }
+  .photo-ph img.loaded{ opacity:1; }
+  .photo-ph img:not([src]){ display:none; }
+
+  /* ---------- Caption: 글 길이가 항목마다 달라서, 이 상자 안에서만 스크롤된다 ---------- */
+  .cap-eyebrow{
+    margin: 22px 24px 0;
+    color: var(--maroon);
+    font-weight:700;
+    font-size: 15px;
+    line-height:1.4;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .cap-desc{
+    margin: 8px 24px 0;
+    padding-right: 8px;
+    height: 168px;
+    overflow-y: auto;
+    font-size: 13.5px;
+    line-height:1.55;
+    color: var(--ink-soft);
+    scrollbar-width: thin;
+    scrollbar-color: #c9a49c rgba(138,63,54,0.07);
+  }
+  .cap-desc::-webkit-scrollbar{ width:5px; }
+  .cap-desc::-webkit-scrollbar-track{ background: rgba(138,63,54,0.07); border-radius: 999px; }
+  .cap-desc::-webkit-scrollbar-thumb{ background: rgba(138,63,54,0.45); border-radius: 999px; }
+  .cap-desc strong{ color: var(--ink); font-weight:400; }
+
+  /* ---------- Pager: 남는 공간을 채우며 화면 하단으로 붙는다 ---------- */
+  .pager{
+    margin: auto 24px 22px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .pager .arrow{
+    width:34px; height:34px;
+    flex-shrink:0;
+    border-radius:50%;
+    border:0;
+    background: rgba(44,40,35,0.06);
+    color: var(--ink);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition: background .15s ease, transform .15s ease;
+  }
+  .pager .arrow:active{ background: rgba(44,40,35,0.12); transform: scale(0.94); }
+  .pager .arrow svg{ width:16px; height:16px; }
+  .pager .arrow[disabled]{ opacity:0.3; cursor:default; }
+  .pager .arrow[disabled]:active{ background: rgba(44,40,35,0.06); transform:none; }
+  .pager-dots{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 6px;
+    flex-wrap:wrap;
+    padding: 0 8px;
+  }
+  .pager-dots .dot{
+    width:6px; height:6px;
+    flex-shrink:0;
+    border-radius:50%;
+    border:0;
+    padding:0;
+    background: var(--line);
+    cursor:pointer;
+    transition: background .2s ease, transform .2s ease;
+  }
+  .pager-dots .dot.active{
+    background: var(--maroon);
+    transform: scale(1.35);
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+<div class="screen" id="screen">
+
+  <!-- Header -->
+  <header class="header">
+    <img class="mark" src="assets/camellia-mark.png" alt="">
+    <span class="title">제주 4·3 디지털 아카이브</span>
+    <div class="lang-wrap">
+      <button class="lang-btn" id="langBtn" aria-label="언어 선택">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.5 3.8 5.5 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.5-3.8-9S9.5 5.5 12 3Z"/></svg>
+      </button>
+      <div class="lang-dropdown" id="langDropdown"></div>
+    </div>
+    <a class="home-btn" href="index.html" aria-label="홈으로">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg>
+    </a>
+  </header>
+
+  <h1 class="page-title" id="pageTitle">그때, 제주대학교</h1>
+
+  <!-- 그때(2014년 이전) / 오늘, 우리는(2014년 이후) -->
+  <div class="tab-toggle" id="tabToggle">
+    <div class="tab-thumb" id="tabThumb"></div>
+    <button type="button" class="active" data-tab="then" id="tabThenBtn">그때</button>
+    <button type="button" data-tab="now" id="tabNowBtn">오늘, 우리는</button>
+  </div>
+
+  <!-- 사진: 항목(연도)마다 assets/years/연도.jpg(또는 .png)를 넣으면 자동으로 표시된다 -->
+  <div class="photo-ph">
+    <img id="photoImg" alt="">
+  </div>
+
+  <!-- 선택된 항목의 설명 -->
+  <div class="cap-eyebrow" id="capEyebrow">그 시절의 제주</div>
+  <p class="cap-desc" id="capDesc">사진과 설명이 들어갈 자리입니다.</p>
+
+  <!-- 페이지 넘기기 -->
+  <div class="pager">
+    <button type="button" class="arrow" id="prevBtn" aria-label="이전">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <div class="pager-dots" id="pagerDots"></div>
+    <button type="button" class="arrow" id="nextBtn" aria-label="다음">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="kr">제주 4·3 디지털 아카이브</div>
+    <div class="en">JEJU 4·3 DIGITAL ARCHIVE</div>
+    <p class="msg">제주대학교<br>4·3의 기록과 기억을 보존하고<br>다음 세대에 전합니다.</p>
+    <div class="univ">@ JEJU NATIONAL UNIVERSITY</div>
+    <img class="bloom" src="assets/camellia-line.png" alt="">
+  </footer>
+
+</div>
+</div>
+
+<script src="assets/fit-screen.js"></script>
+<script src="assets/lang-switch.js?v=3"></script>
+<script>
+  // 언어별 제목/설명. 기계번역 초안이라 공개 전 원어민 검수를 권장한다.
+  // slug: 사진 파일명(assets/years/{slug}.jpg)에 쓰인다. yNum+isDecade로 언어별 "1960년"/"1960"/"1960年" 표기를 만든다.
+  const ITEMS = {
+    then: [
+      { slug: "1960", yNum: 1960, isDecade: false,
+        title: { ko: "4·3 진상규명운동의 시작", en: "The Truth-Finding Movement Begins", zh: "4·3真相调查运动的开始", ja: "4·3真相究明運動の始まり" },
+        desc: {
+          ko: "4·19혁명 직후 제주대학교 학생 7명이 **「4·3사건진상규명동지회」**를 결성했다. 학생들은 제주도 전역을 돌며 피해 사실과 유족·주민들의 증언을 수집하고, 정부 차원의 진상조사를 요구했다. 이는 제주대 학생들이 4·3 문제를 공개적으로 제기한 최초의 진상규명운동으로 평가된다. 이후 1961년 5·16 군사정변으로 활동이 강제로 중단되었다.",
+          en: "Right after the April 19 Revolution, seven Jeju National University students formed the **\"4·3 Incident Truth-Finding Comrades' Society.\"** They traveled across Jeju collecting accounts of the damage and testimonies from bereaved families and residents, and demanded a government-level investigation. This is regarded as the first truth-finding movement in which Jeju National University students publicly raised the issue of 4·3. The activity was forcibly halted by the May 16 military coup of 1961.",
+          zh: "4·19革命爆发后不久，7名济州大学校学生组成了**\"4·3事件真相调查同志会\"**。学生们走遍济州岛各地，收集受害事实及遗属、居民的证言，要求政府层面展开真相调查。这被评价为济州大学学生首次公开提出4·3问题的真相调查运动。此后因1961年5·16军事政变，活动被强制中断。",
+          ja: "4·19革命直後、済州大学校の学生7人が**「4·3事件真相究明同志会」**を結成した。学生たちは済州島全域を回って被害の事実と遺族・住民の証言を収集し、政府レベルの真相調査を要求した。これは済州大学の学生たちが4·3問題を公に提起した最初の真相究明運動と評価されている。その後、1961年の5·16軍事政変により活動は強制的に中断された。"
+        } },
+      { slug: "1986", yNum: 1986, isDecade: false,
+        title: { ko: "학내에서 다시 시작된 4·3의 기억", en: "4·3's Memory Revived on Campus", zh: "校园内重新唤起的4·3记忆", ja: "学内で再び始まった4·3の記憶" },
+        desc: {
+          ko: "4월 3일 제주대학교 총학생회장 박희수의 제안으로 학내 4·3 분향소가 설치되었다. 1960년 이후 약 26년 만에 대학 공간에서 다시 4·3을 공개적으로 이야기하기 시작했다는 점에서 의미가 크다.",
+          en: "On April 3, at the proposal of Jeju National University Student Council President Park Hee-su, a memorial altar for 4·3 was set up on campus. This holds great significance in that, for the first time in about 26 years since 1960, 4·3 began to be publicly discussed again within university space.",
+          zh: "4月3日，在济州大学校总学生会会长朴熙洙的提议下，校内设立了4·3灵堂。这标志着自1960年以来约26年间，大学空间再次公开谈论4·3，意义重大。",
+          ja: "4月3日、済州大学校総学生会長パク・ヒスの提案により、学内に4·3焚香所が設置された。1960年以来約26年ぶりに、大学という空間で再び4·3を公に語り始めたという点で意義が大きい。"
+        } },
+      { slug: "1987", yNum: 1987, isDecade: false,
+        title: { ko: "4·3 학생운동의 본격적인 확산", en: "The 4·3 Student Movement Spreads", zh: "4·3学生运动的全面扩散", ja: "4·3学生運動の本格的な拡大" },
+        desc: {
+          ko: "제주대학교 총학생회가 4·3 발발 이후 처음으로 학내 위령제를 개최했다. 이와 함께 4·3을 '민중항쟁'으로 규정한 대자보가 게시되었고, 이를 작성한 학생들이 경찰에 연행되었다. 학생들은 연행된 학생들의 석방을 요구하며 중간고사를 거부했고, 약 3,000명이 참여한 비상학생총회까지 열렸다. 이를 계기로 4·3은 일부 학생들의 문제를 넘어 제주대 학생사회 전체의 의제로 확대되었다.",
+          en: "The Jeju National University Student Council held the first on-campus memorial service for 4·3 since the incident occurred. Alongside this, a wall poster defining 4·3 as a \"people's uprising\" was put up, and the students who wrote it were arrested by police. Students boycotted midterm exams demanding the arrested students' release, and an emergency general student assembly attended by about 3,000 people was even held. This became the occasion for 4·3 to expand beyond the concern of a few students into an agenda for the entire Jeju National University student body.",
+          zh: "济州大学校总学生会首次在4·3事件爆发后于校内举行了慰灵祭。与此同时，一张将4·3定性为\"民众抗争\"的大字报被张贴出来，撰写者遭警方逮捕。学生们为要求释放被捕学生而拒绝参加期中考试，甚至召开了约3000人参加的紧急学生总会。以此为契机，4·3问题超越了部分学生的个人议题，扩大为济州大学全体学生社会共同的议题。",
+          ja: "済州大学校総学生会が、4·3発生以来初めて学内慰霊祭を開催した。これとともに、4·3を「民衆抗争」と規定した壁新聞(大字報)が掲示され、これを作成した学生たちが警察に連行された。学生たちは連行された学生の釈放を求めて中間試験を拒否し、約3,000人が参加する非常学生総会まで開かれた。これを契機に4·3は一部学生の問題を超え、済州大学学生社会全体の議題へと拡大した。"
+        } },
+      { slug: "1989", yNum: 1989, isDecade: false,
+        title: { ko: "지역사회로 확장된 4·3 운동", en: "4·3 Reaches the Wider Community", zh: "4·3运动扩展至地区社会", ja: "地域社会へ拡大した4·3運動" },
+        desc: {
+          ko: "제주지역 총학생회협의회가 **「4·3 자주항쟁 계승 및 구국선열 추모제」**를 개최했다. 제주대 학생들의 활동은 학내 추모를 넘어 지역 대학생과 시민사회단체의 연대, 거리행진, 공개 추모행사와 문화활동 등으로 확대되었다.",
+          en: "The Jeju Regional Council of Student Councils held the **\"Memorial for the Succession of the 4·3 Independence Struggle and the Patriotic Martyrs.\"** Jeju National University students' activities expanded beyond on-campus commemoration to solidarity with regional university students and civic organizations, street marches, public memorial events, and cultural activities.",
+          zh: "济州地区总学生会协议会举办了**\"4·3自主抗争继承及救国先烈追悼祭\"**。济州大学学生们的活动超越了校内悼念，扩展为与地区大学生及市民社会团体的联合、街头游行、公开悼念活动及文化活动等。",
+          ja: "済州地域総学生会協議会が**「4·3自主抗争継承及び救国先烈追悼祭」**を開催した。済州大学の学生たちの活動は学内追悼を超え、地域大学生や市民社会団体との連帯、街頭行進、公開追悼行事や文化活動などへと拡大した。"
+        } },
+      { slug: "1991", yNum: 1991, isDecade: false,
+        title: { ko: "사월대 발대와 대규모 진상규명 투쟁", en: "The April Corps and Street Struggle", zh: "四月队成立与大规模真相调查斗争", ja: "四月隊発隊と大規模な真相究明闘争" },
+        desc: {
+          ko: "4월 1일 제주대에서 4·3 진상규명 투쟁을 위한 사월대 발대식이 열렸다. 이어 4월 3일에는 약 1,000명의 학생이 참여한 대규모 집회가 진행되었으며, 많은 학생이 경찰에 연행되는 등 4·3 진상규명운동이 강한 거리투쟁의 형태로 전개되었다.",
+          en: "On April 1, a launch ceremony for the \"April Corps,\" formed for the 4·3 truth-finding struggle, was held at Jeju National University. Then on April 3, a large-scale rally attended by about 1,000 students took place, and many students were arrested by police; the 4·3 truth-finding movement unfolded in the form of intense street struggle.",
+          zh: "4月1日，济州大学举行了为4·3真相调查斗争而组建的\"四月队\"成立仪式。随后4月3日，约1000名学生参加的大规模集会举行，许多学生遭警方逮捕，4·3真相调查运动以激烈的街头斗争形式展开。",
+          ja: "4月1日、済州大学で4·3真相究明闘争のための四月隊発隊式が行われた。続いて4月3日には約1,000人の学生が参加する大規模な集会が行われ、多くの学生が警察に連行されるなど、4·3真相究明運動は激しい街頭闘争の形で展開された。"
+        } },
+      { slug: "1993", yNum: 1993, isDecade: false,
+        title: { ko: "특별법 제정 요구가 국회로", en: "Special Law Petition to the Assembly", zh: "特别法制定要求提交国会", ja: "特別法制定要求が国会へ" },
+        desc: {
+          ko: "제주지역총학생회협의회를 중심으로 4·3특별법 제정과 국회 특별위원회 구성을 촉구하는 청원서가 국회에 제출되었다. 청원에는 약 1만 7천 명의 제주도민이 서명했으며, 학생운동이 도민과 국회를 연결하는 제도적 진상규명운동으로 발전하는 계기가 되었다.",
+          en: "Led by the Jeju Regional Council of Student Councils, a petition urging the enactment of a 4·3 Special Act and the formation of a National Assembly special committee was submitted to the National Assembly. About 17,000 Jeju residents signed the petition, which became the occasion for the student movement to develop into an institutional truth-finding movement linking the island's residents with the National Assembly.",
+          zh: "以济州地区总学生会协议会为中心，一份敦促制定4·3特别法及成立国会特别委员会的请愿书被提交至国会。约1万7千名济州岛民在请愿书上签名，这成为学生运动发展为连接岛民与国会的制度性真相调查运动的契机。",
+          ja: "済州地域総学生会協議会を中心に、4·3特別法の制定と国会特別委員会の構成を求める請願書が国会に提出された。請願には約1万7千人の済州島民が署名し、学生運動が島民と国会を結ぶ制度的な真相究明運動へと発展する契機となった。"
+        } },
+      { slug: "1999", yNum: 1999, isDecade: false,
+        title: { ko: "4·3특별법 제정", en: "Enactment of the 4·3 Special Act", zh: "4·3特别法制定", ja: "4·3特別法の制定" },
+        desc: {
+          ko: "12월 16일 국회에서 **「제주4·3사건 진상규명 및 희생자 명예회복에 관한 특별법」**이 통과되었다. 1960년 제주대 학생들의 진상규명운동에서 시작된 오랜 요구가 약 40년 만에 제도적 결실을 맺었다.",
+          en: "On December 16, the National Assembly passed the **\"Special Act on the Investigation of the Jeju 4·3 Incident and the Restoration of Victims' Honor.\"** The long-standing demand, which began with the truth-finding movement of Jeju National University students in 1960, bore institutional fruit after about 40 years.",
+          zh: "12月16日，国会通过了**《济州4·3事件真相调查及牺牲者名誉恢复特别法》**。始于1960年济州大学学生真相调查运动的长久诉求，历经约40年终于结出制度性果实。",
+          ja: "12月16日、国会で**「済州4·3事件真相究明及び犠牲者名誉回復に関する特別法」**が通過した。1960年の済州大学学生たちの真相究明運動に始まった長年の要求が、約40年を経て制度的な結実を迎えた。"
+        } },
+      { slug: "2000s", yNum: 2000, isDecade: true,
+        title: { ko: "투쟁에서 교육·기억으로", en: "From Struggle to Education", zh: "从斗争到教育与记忆", ja: "闘争から教育・記憶へ" },
+        desc: {
+          ko: "4·3특별법 제정 이후 학생들의 활동은 거리투쟁 중심에서 교육, 학술활동, 추모, 전시, 문화활동, 유적지 답사 등으로 다양해졌다. 제주대학교에서도 4·3 관련 강의와 연구가 확대되면서 4·3이 대학의 학문과 교육 영역으로 자리 잡기 시작했다.",
+          en: "After the enactment of the 4·3 Special Act, student activity diversified from street-struggle-centered efforts into education, academic work, commemoration, exhibitions, cultural activities, and visits to historical sites. At Jeju National University as well, 4·3-related lectures and research expanded, and 4·3 began to establish itself within the university's academic and educational domain.",
+          zh: "4·3特别法制定后，学生们的活动从以街头斗争为中心转向教育、学术活动、悼念、展览、文化活动、遗址踏查等多样化形式。济州大学也扩大了4·3相关课程与研究，4·3开始在大学的学术与教育领域中确立地位。",
+          ja: "4·3特別法制定後、学生たちの活動は街頭闘争中心から教育、学術活動、追悼、展示、文化活動、史跡踏査などへと多様化した。済州大学校でも4·3関連の講義と研究が拡大し、4·3が大学の学問と教育の領域に位置づけられ始めた。"
+        } }
+    ],
+    now: [
+      { slug: "2014", yNum: 2014, isDecade: false,
+        title: { ko: "학생들의 진상규명운동을 다시 기록하다", en: "Recording the Students' Movement", zh: "再次记录学生们的真相调查运动", ja: "学生たちの真相究明運動を再び記録する" },
+        desc: {
+          ko: "제주대학교 박물관에서 **「학생들의 4·3 진상규명운동」** 사진전이 개최되었다. 과거 학생들이 펼쳤던 4·3 진상규명 활동을 사진과 기록으로 되돌아보며, 제주대 학생운동 자체를 기억하고 계승해야 할 역사로 조명했다.",
+          en: "The Jeju National University Museum held the photo exhibition **\"Students' 4·3 Truth-Finding Movement.\"** Looking back through photographs and records at the truth-finding activities once carried out by students, it shed light on the Jeju National University student movement itself as history to be remembered and carried forward.",
+          zh: "济州大学校博物馆举办了**《学生们的4·3真相调查运动》**摄影展。通过照片与记录回顾过去学生们开展的4·3真相调查活动，将济州大学学生运动本身视为应被铭记与传承的历史，加以关注。",
+          ja: "済州大学校博物館で**「学生たちの4·3真相究明運動」**写真展が開催された。かつて学生たちが繰り広げた4·3真相究明活動を写真と記録で振り返り、済州大学の学生運動そのものを記憶し継承すべき歴史として照らし出した。"
+        } },
+      { slug: "2016", yNum: 2016, isDecade: false,
+        title: { ko: "대학생 4·3 바로알리기 활동 확대", en: "Campaign to Inform about 4·3", zh: "大学生\"正确认识4·3\"活动扩大", ja: "4·3を正しく知らせる活動の拡大" },
+        desc: {
+          ko: "제주대 총학생회가 **「제주지역대학생 4·3 바로알리기」** 행사를 진행했다. 약 700명의 대학생이 거리행진, 홍보부스, 시민 분향소, 전시, 유적지 기행, 헌화 등 다양한 프로그램에 참여하며 4·3을 시민들에게 알렸다.",
+          en: "The Jeju National University Student Council carried out the **\"Jeju Regional University Students' Correctly Informing about 4·3\"** event. About 700 university students took part in a variety of programs — street marches, promotional booths, a citizens' memorial altar, exhibitions, visits to historical sites, and flower-laying — to inform citizens about 4·3.",
+          zh: "济州大学总学生会举办了**\"济州地区大学生正确认识4·3\"**活动。约700名大学生参与了街头游行、宣传展位、市民灵堂、展览、遗址考察、献花等多种项目，向市民宣传4·3。",
+          ja: "済州大学総学生会が**「済州地域大学生4·3を正しく知らせる」**行事を行った。約700人の大学生が街頭行進、広報ブース、市民焚香所、展示、史跡巡り、献花など多様なプログラムに参加し、4·3を市民に知らせた。"
+        } },
+      { slug: "2017", yNum: 2017, isDecade: false,
+        title: { ko: "제주지역 대학생 연대 강화", en: "Jeju University Students Unite", zh: "济州地区大学生联合加强", ja: "済州地域大学生の連帯強化" },
+        desc: {
+          ko: "제주대·제주국제대·제주한라대·제주관광대 등 제주지역 4개 대학이 연합해 대학생 4·3 평화대행진을 진행했다. 거리행진뿐 아니라 추모주간, 분향소, 작품 공모전, 4·3길 걷기, 행방불명인 표석 조화 꽂기 등 다양한 참여형 활동이 이어졌다.",
+          en: "Four universities in the Jeju region — Jeju National University, Jeju International University, Jeju Halla University, and Jeju Tourism University — joined forces to hold a university students' 4·3 Peace Grand March. In addition to the street march, a variety of participatory activities continued, including a memorial week, a memorial altar, an art competition, walking the 4·3 trail, and placing flowers at memorial markers for the missing.",
+          zh: "济州大学、济州国际大学、济州汉拿大学、济州观光大学等济州地区4所大学联合举行了大学生4·3和平大游行。除街头游行外，悼念周、灵堂、作品征集大赛、4·3之路徒步、为失踪者标石献花等多种参与式活动也相继展开。",
+          ja: "済州大学・済州国際大学・済州漢拏大学・済州観光大学など済州地域の4大学が連合し、大学生4·3平和大行進を行った。街頭行進だけでなく、追悼週間、焚香所、作品公募展、4·3の道歩き、行方不明者標石への造花供えなど、多様な参加型活動が続いた。"
+        } },
+      { slug: "2018", yNum: 2018, isDecade: false,
+        title: { ko: "4·3 70주년, 전국 대학생으로 확대", en: "4·3's 70th Anniversary, Nationwide", zh: "4·3七十周年，扩展至全国大学生", ja: "4·3 70周年、全国の大学生へ拡大" },
+        desc: {
+          ko: "4·3 70주년을 맞아 제주지역 대학생들과 전국 국공립대학생연합회가 함께 4·3 알리기 거리행진을 진행했다. 학생들은 특별법 개정, 4·3 역사교육 강화, 4·3 정명 찾기 등을 요구하며 제주 안의 활동을 전국 대학생 연대로 확대했다.\n\n같은 해부터 대학생 4·3 동백서포터즈가 운영되기 시작했다. 대학생들이 직접 4·3 역사 학습, 유적지 답사, 홍보 콘텐츠 제작, 추모행사와 SNS 홍보 등에 참여하며 새로운 세대가 4·3을 알리는 주체로 등장했다.",
+          en: "Marking the 70th anniversary of 4·3, Jeju regional university students and the National Federation of Public University Student Councils jointly held a street march to raise awareness of 4·3. Students called for revision of the Special Act, strengthened 4·3 history education, and finding 4·3's proper name, expanding activity within Jeju into nationwide university-student solidarity.\n\nFrom that same year, the university student \"4·3 Camellia Supporters\" began operating. University students directly took part in learning 4·3 history, visiting historical sites, producing promotional content, and organizing memorial events and social media outreach, emerging as a new generation that carried the task of informing others about 4·3.",
+          zh: "值4·3七十周年之际，济州地区大学生与全国国公立大学生联合会共同举行了宣传4·3的街头游行。学生们要求修订特别法、加强4·3历史教育、寻找4·3正名等，将济州岛内的活动扩展为全国大学生的联合行动。\n\n同年起，大学生4·3山茶花支援团开始运营。大学生们亲自参与4·3历史学习、遗址考察、宣传内容制作、悼念活动及社交媒体宣传等，新一代成为了宣传4·3的主体。",
+          ja: "4·3 70周年を迎え、済州地域の大学生たちと全国国公立大学生連合会が共に4·3を知らせる街頭行進を行った。学生たちは特別法改正、4·3歴史教育の強化、4·3正名探しなどを要求し、済州内の活動を全国の大学生連帯へと拡大した。\n\n同年から大学生4·3椿サポーターズが運営され始めた。大学生たちが直接4·3の歴史学習、史跡踏査、広報コンテンツ制作、追悼行事やSNS広報などに参加し、新しい世代が4·3を知らせる主体として登場した。"
+        } },
+      { slug: "2021", yNum: 2021, isDecade: false,
+        title: { ko: "온라인으로 이어진 4·3 기억", en: "4·3's Memory Carried On Online", zh: "以线上方式延续的4·3记忆", ja: "オンラインでつながった4·3の記憶" },
+        desc: {
+          ko: "코로나19로 대면행사가 어려워지자 제주대 총학생회는 **「온라인 4·3 평화의 거리」**를 제작했다. 영상, 카드뉴스, 유족 증언, 온라인 유적지 탐방, 온라인 분향소 등을 통해 4·3을 알렸다. 또한 **「#겅해도 우린 걸으쿠다」** 온라인 걷기 챌린지를 진행하며 기존 거리행진을 온라인 참여형 활동으로 전환했다.",
+          en: "As COVID-19 made in-person events difficult, the Jeju National University Student Council produced the **\"Online 4·3 Street of Peace.\"** It raised awareness of 4·3 through videos, card news, bereaved families' testimonies, online tours of historical sites, and an online memorial altar. The council also ran the **\"#Still, We Will Walk\"** online walking challenge, converting the traditional street march into an online participatory activity.",
+          zh: "新冠疫情使线下活动难以举行，济州大学总学生会制作了**\"线上4·3和平之路\"**。通过视频、卡片新闻、遗属证言、线上遗址参访、线上灵堂等方式宣传4·3。此外还开展了**\"#即便如此我们也会前行\"**线上徒步挑战，将原有的街头游行转换为线上参与型活动。",
+          ja: "コロナ19により対面行事が難しくなると、済州大学総学生会は**「オンライン4·3平和の道」**を制作した。映像、カードニュース、遺族証言、オンライン史跡探訪、オンライン焚香所などを通じて4·3を知らせた。また**「＃それでも私たちは歩きます」**オンラインウォーキングチャレンジを行い、従来の街頭行進をオンライン参加型活動へと転換した。"
+        } },
+      { slug: "2022", yNum: 2022, isDecade: false,
+        title: { ko: "일상 속에서 4·3을 기억하는 공간", en: "A Space to Remember 4·3 Daily", zh: "在日常中铭记4·3的空间", ja: "日常の中で4·3を記憶する空間" },
+        desc: {
+          ko: "제주대학교 학생회관 3층에 **「4·3 작은 전시관」**이 조성되었다. 4·3 연표, 제주대 학생들의 진상규명운동 사진, 전국대학생 평화대행진 자료와 함께 상설분향소, 영상 시청 공간, 스터디 공간 등이 마련되었다. 4월의 일회성 행사를 넘어 학생들이 일상 속에서 4·3을 접할 수 있는 공간이 만들어졌다는 데 의미가 있다.\n\n같은 해 **「전국대학생 4·3 평화인권포럼」**도 개최되어 전국 대학생들이 4·3, 민주화운동, 평화, 인권, 과거사 해결과 세대전승을 함께 논의했다.",
+          en: "The **\"4·3 Small Exhibition Hall\"** was established on the third floor of the Jeju National University Student Union building. Alongside a 4·3 timeline, photographs of Jeju National University students' truth-finding movement, and materials from the national university students' Peace Grand March, a permanent memorial altar, a video-viewing space, and a study space were set up. It is significant in that a space was created where students could encounter 4·3 in everyday life, beyond a one-time event each April.\n\nThat same year, the **\"National University Students' 4·3 Peace and Human Rights Forum\"** was also held, where university students from across the country discussed 4·3, the democratization movement, peace, human rights, resolving past wrongs, and passing the memory to the next generation.",
+          zh: "济州大学校学生会馆3楼设立了**\"4·3小型展览馆\"**。展馆陈列4·3年表、济州大学学生真相调查运动的照片、全国大学生和平大游行资料，并设有常设灵堂、影像观看空间、自习空间等。其意义在于，超越了每年4月的一次性活动，打造出一个让学生在日常生活中接触4·3的空间。\n\n同年还举办了**\"全国大学生4·3和平人权论坛\"**，全国大学生就4·3、民主化运动、和平、人权、历史问题解决及世代传承展开了共同讨论。",
+          ja: "済州大学校学生会館3階に**「4·3小さな展示館」**が造成された。4·3年表、済州大学学生たちの真相究明運動の写真、全国大学生平和大行進資料とともに、常設焚香所、映像視聴空間、学習空間などが設けられた。4月の一回限りの行事を超え、学生たちが日常の中で4·3に触れられる空間が作られたという点に意義がある。\n\n同年**「全国大学生4·3平和人権フォーラム」**も開催され、全国の大学生たちが4·3、民主化運動、平和、人権、過去事解決と世代継承について共に議論した。"
+        } },
+      { slug: "2024", yNum: 2024, isDecade: false,
+        title: { ko: "4·3의 세대전승", en: "Passing 4·3 to the Next Generation", zh: "4·3的世代传承", ja: "4·3の世代継承" },
+        desc: {
+          ko: "제주지역 대학과 전국 대학생들이 함께 대학생 4·3 평화대행진에 참여했다. 학생들은 과거 청년학생들이 4·3 해결에 앞장섰던 것처럼 자신들도 4·3의 평화와 인권 정신을 이어가겠다는 뜻을 공동선언을 통해 밝혔다. 이 시기 활동의 핵심은 '세대전승'으로 정리할 수 있다.",
+          en: "Universities in the Jeju region and university students from across the country took part together in the university students' 4·3 Peace Grand March. Through a joint declaration, students expressed their resolve to carry on the spirit of peace and human rights embodied by 4·3, just as young students once took the lead in resolving the 4·3 issue. The core of this period's activity can be summed up as \"passing the memory to the next generation.\"",
+          zh: "济州地区高校与全国大学生共同参加了大学生4·3和平大游行。学生们通过联合宣言表明，正如过去青年学生曾引领4·3问题的解决一样，他们也将继承4·3的和平与人权精神。这一时期活动的核心可以概括为\"世代传承\"。",
+          ja: "済州地域の大学と全国の大学生たちが共に大学生4·3平和大行進に参加した。学生たちは、かつて青年学生たちが4·3解決に先頭に立ったように、自分たちも4·3の平和と人権の精神を受け継いでいくという意志を共同宣言を通じて明らかにした。この時期の活動の核心は「世代継承」とまとめることができる。"
+        } },
+      { slug: "2025", yNum: 2025, isDecade: false,
+        title: { ko: "4·3 교육의 제도화", en: "Institutionalizing 4·3 Education", zh: "4·3教育的制度化", ja: "4·3教育の制度化" },
+        desc: {
+          ko: "제주대학교 총학생회는 4·3 비교과 온라인 강의 개설과 유학생 대상 4·3 역사교육 프로그램을 학생회 정책으로 논의했다. 특정 기간의 기념행사를 넘어 대학생활 속에서 4·3을 지속적으로 배우는 방향으로 활동이 변화하고 있다.",
+          en: "The Jeju National University Student Council discussed, as student council policy, the launch of a non-credit online 4·3 course and a 4·3 history education program for international students. Activity is shifting beyond commemorative events held during a specific period, toward continuously learning about 4·3 throughout university life.",
+          zh: "济州大学校总学生会就开设4·3非学分线上课程及面向留学生的4·3历史教育项目作为学生会政策进行了讨论。活动正从特定时期的纪念活动，转向在大学生活中持续学习4·3的方向发展。",
+          ja: "済州大学校総学生会は、4·3の非教科オンライン講義の開設と留学生対象の4·3歴史教育プログラムを学生会政策として議論した。特定期間の記念行事を超え、大学生活の中で4·3を継続的に学ぶ方向へと活動が変化している。"
+        } },
+      { slug: "2026", yNum: 2026, isDecade: false,
+        title: { ko: "기억·교육·평화의 지속", en: "Memory, Education, and Peace Go On", zh: "记忆、教育与和平的延续", ja: "記憶・教育・平和の持続" },
+        desc: {
+          ko: "대학생 4·3 동백서포터즈를 중심으로 역사 학습, 평화대행진, 행방불명인 표석 조화 꽂기, 추모주간, 학생회관 홍보, 유적지 기행과 SNS 홍보 등이 이어지고 있다. 제주대의 4·3 활동은 현재 추모를 넘어 교육·일상화·전국화·세대전승의 방향으로 이어지고 있다.",
+          en: "Centered on the university student \"4·3 Camellia Supporters,\" activities continue — history learning, the Peace Grand March, placing flowers at memorial markers for the missing, memorial week, promotion at the student union building, visits to historical sites, and social media outreach. Jeju National University's 4·3 activity now extends beyond remembrance alone, moving in the direction of education, everyday integration, nationwide reach, and passing the memory to the next generation.",
+          zh: "以大学生4·3山茶花支援团为中心，历史学习、和平大游行、为失踪者标石献花、悼念周、学生会馆宣传、遗址考察及社交媒体宣传等活动仍在持续。济州大学的4·3活动如今已超越单纯的悼念，正朝着教育化、日常化、全国化及世代传承的方向延续发展。",
+          ja: "大学生4·3椿サポーターズを中心に、歴史学習、平和大行進、行方不明者標石への造花供え、追悼週間、学生会館での広報、史跡巡りとSNS広報などが続いている。済州大学の4·3活動は現在、追悼を超えて教育化・日常化・全国化・世代継承の方向へとつながっている。"
+        } }
+    ]
+  };
+
+  const UI = {
+    ko: { pageTitle: "그때, 제주대학교", tabThen: "그때", tabNow: "오늘, 우리는", dotLabel: "번째 기록 보기", yearSuffix: "년", decadeSuffix: "년대" },
+    en: { pageTitle: "Jeju Univ., Then", tabThen: "Then", tabNow: "Today, Us", dotLabel: "th record", yearSuffix: "", decadeSuffix: "s" },
+    zh: { pageTitle: "那时，济州大学校", tabThen: "那时", tabNow: "今天，我们", dotLabel: "条记录", yearSuffix: "年", decadeSuffix: "年代" },
+    ja: { pageTitle: "あの頃、済州大学校", tabThen: "あの頃", tabNow: "今日、私たち", dotLabel: "番目の記録", yearSuffix: "年", decadeSuffix: "年代" }
+  };
+
+  // yNum+isDecade로 언어별 연도 표기를 만든다: 1960/ko → "1960년", 1960/en → "1960", 2000/decade/ko → "2000년대"
+  function yearText(item, lang) {
+    const suffix = item.isDecade ? UI[lang].decadeSuffix : UI[lang].yearSuffix;
+    return item.yNum + suffix;
+  }
+
+  // **강조** → <strong>강조</strong>, 줄바꿈 → <br><br>
+  function formatDesc(text) {
+    const escaped = text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    return escaped
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\n\n/g, "<br><br>");
+  }
+
+  const tabButtons = Array.from(document.querySelectorAll(".tab-toggle button"));
+  const tabThumb = document.getElementById("tabThumb");
+  const capEyebrow = document.getElementById("capEyebrow");
+  const capDesc = document.getElementById("capDesc");
+  const pagerDots = document.getElementById("pagerDots");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const photoImg = document.getElementById("photoImg");
+
+  // 연도 사진: assets/years/연도.jpg 를 먼저 찾고, 없으면 .png, .jpeg 순서로 시도한다.
+  // 셋 다 없으면 사진 없이 placeholder 색이 그대로 보인다.
+  const PHOTO_EXTS = ["jpg", "png", "jpeg"];
+  function setPhoto(slug) {
+    photoImg.classList.remove("loaded");
+    if (!slug) { photoImg.removeAttribute("src"); return; }
+    let i = 0;
+    function tryNext() {
+      if (i >= PHOTO_EXTS.length) {
+        photoImg.removeAttribute("src");
+        return;
+      }
+      photoImg.src = "assets/years/" + slug + "." + PHOTO_EXTS[i];
+      i += 1;
+    }
+    photoImg.onerror = tryNext;
+    photoImg.onload = function () {
+      photoImg.classList.add("loaded");
+      if (window.__fitScreen) window.__fitScreen();
+    };
+    tryNext();
+  }
+
+  let tab = "then";
+  let page = 0;
+  let currentLang = "ko";
+  let dotsTab = null; // 점을 마지막으로 그렸을 때의 탭 (탭이 바뀔 때만 다시 그린다)
+
+  function renderDots() {
+    const list = ITEMS[tab];
+    if (dotsTab !== tab) {
+      pagerDots.innerHTML = "";
+      list.forEach(function (_, i) {
+        const dot = document.createElement("button");
+        dot.type = "button";
+        dot.className = "dot";
+        dot.setAttribute("aria-label", (i + 1) + (UI[currentLang] || UI.ko).dotLabel);
+        dot.addEventListener("click", function () {
+          if (page === i) return;
+          page = i;
+          render();
+        });
+        pagerDots.appendChild(dot);
+      });
+      dotsTab = tab;
+    }
+    Array.from(pagerDots.children).forEach(function (dot, i) {
+      dot.classList.toggle("active", i === page);
+    });
+  }
+
+  // 글이 짧은 항목은 큰 글자로 넉넉하게, 긴 항목만 상자에 맞을 때까지 글자를 줄인다 (스크롤은 안전장치로 남겨둔다).
+  const CAP_DESC_SIZES = [13.5, 13, 12.5, 12, 11.5, 11, 10.5, 10, 9.5, 9, 8.5, 8];
+  function fitCapDesc() {
+    for (let i = 0; i < CAP_DESC_SIZES.length; i++) {
+      capDesc.style.fontSize = CAP_DESC_SIZES[i] + "px";
+      if (capDesc.scrollHeight <= capDesc.clientHeight) return;
+    }
+  }
+
+  function render() {
+    const list = ITEMS[tab];
+    const item = list[page];
+    const title = item.title[currentLang] || item.title.ko;
+    const desc = item.desc[currentLang] || item.desc.ko;
+    capEyebrow.textContent = yearText(item, currentLang) + "｜" + title;
+    capDesc.innerHTML = formatDesc(desc);
+    fitCapDesc();
+    capDesc.scrollTop = 0;
+    setPhoto(item.slug);
+    prevBtn.disabled = page === 0;
+    nextBtn.disabled = page === list.length - 1;
+    const activeIndex = tabButtons.findIndex(function (b) { return b.dataset.tab === tab; });
+    tabButtons.forEach(function (btn, i) {
+      btn.classList.toggle("active", i === activeIndex);
+    });
+    // 탭 배경(마룬 알약)이 눌린 버튼 쪽으로 스르륵 슬라이드한다 (CSS %기반이라 테두리를 넘지 않는다).
+    tabThumb.classList.toggle("pos-1", activeIndex === 1);
+    renderDots();
+    if (window.__fitScreen) window.__fitScreen();
+  }
+
+  tabButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      if (btn.dataset.tab === tab) return;
+      tab = btn.dataset.tab;
+      page = 0;
+      render();
+    });
+  });
+
+  prevBtn.addEventListener("click", function () {
+    if (page > 0) { page -= 1; render(); }
+  });
+  nextBtn.addEventListener("click", function () {
+    if (page < ITEMS[tab].length - 1) { page += 1; render(); }
+  });
+
+  window.__applyLanguage = function (lang) {
+    currentLang = lang;
+    const t = UI[lang] || UI.ko;
+    document.getElementById("pageTitle").textContent = t.pageTitle;
+    document.getElementById("tabThenBtn").textContent = t.tabThen;
+    document.getElementById("tabNowBtn").textContent = t.tabNow;
+    dotsTab = null; // 점 aria-label도 다시 그리도록
+    render();
+  };
+
+  render();
+</script>
+</body>
+</html>

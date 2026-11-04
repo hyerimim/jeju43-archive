@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>후원자 명단 | 제주 4·3 디지털 아카이브</title>
+<meta name="description" content="위령비와 디지털 아카이브를 만드는 데 마음을 모아주신 후원자분들을 소개합니다.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;700;900&family=Noto+Serif+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css?v=3">
+<style>
+  .page-title{
+    margin: 6px 24px 0;
+    font-weight:800;
+    font-size: 28px;
+    letter-spacing:-0.5px;
+    color: var(--ink);
+  }
+  .lede{
+    margin: 12px 24px 0;
+    font-size: 13px;
+    line-height:1.6;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- 금액 구간 필터: 4개가 한 줄에 항상 다 들어오도록 ---------- */
+  .filter-row{
+    margin-top: 18px;
+    padding: 0 24px;
+    display:flex;
+    gap: 5px;
+  }
+  .filter-row button{
+    flex: 1 1 0;
+    min-width:0;
+    border: 1.5px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 9px 4px;
+    font-family: "Noto Serif KR", "Noto Serif JP", serif;
+    font-size: 10px;
+    font-weight:700;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    text-align:center;
+    cursor:pointer;
+  }
+  .filter-row button.active{
+    background: var(--maroon);
+    border-color: var(--maroon);
+    color: #fff;
+  }
+
+  .divider{
+    margin: 18px 24px 0;
+    height:1px;
+    background: var(--line);
+  }
+  .thanks-note{
+    margin: 14px 24px 0;
+    text-align:center;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- 후원자 명단: 이 영역만 내부 스크롤 (테두리 없이, 다른 텍스트와 같은 여백으로 정렬) ---------- */
+  .donor-panel{
+    margin: 24px 24px 0;
+    padding-right: 10px;
+    height: 415px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #c9a49c rgba(138,63,54,0.07);
+  }
+  .donor-panel::-webkit-scrollbar{ width:6px; }
+  .donor-panel::-webkit-scrollbar-track{ background: rgba(138,63,54,0.07); border-radius: 999px; }
+  .donor-panel::-webkit-scrollbar-thumb{ background: rgba(138,63,54,0.45); border-radius: 999px; }
+  .donor-panel::-webkit-scrollbar-thumb:hover{ background: rgba(138,63,54,0.65); }
+  .donor-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 14px;
+    row-gap: 0;
+    padding-bottom: 4px;
+  }
+  .donor-grid .name{
+    padding: 0 0 12px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14.5px;
+    font-weight:600;
+    color: var(--ink);
+  }
+  .donor-empty{
+    padding: 40px 4px 0;
+    text-align:center;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    line-height:1.6;
+  }
+
+</style>
+</head>
+<body>
+<div id="stage">
+<div class="screen" id="screen">
+
+  <!-- Header -->
+  <header class="header">
+    <img class="mark" src="assets/camellia-mark.png" alt="">
+    <span class="title">제주 4·3 디지털 아카이브</span>
+    <div class="lang-wrap">
+      <button class="lang-btn" id="langBtn" aria-label="언어 선택">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.5 3.8 5.5 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.5-3.8-9S9.5 5.5 12 3Z"/></svg>
+      </button>
+      <div class="lang-dropdown" id="langDropdown"></div>
+    </div>
+    <a class="home-btn" href="index.html" aria-label="홈으로">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg>
+    </a>
+  </header>
+
+  <h1 class="page-title" id="pageTitle">후원자 명단</h1>
+  <p class="lede" id="lede">위령비와 디지털 아카이브는<br>후원자분들의 마음이 모여 만들어졌습니다.</p>
+
+  <!-- 금액 구간 필터 -->
+  <div class="filter-row" id="filterRow">
+    <button type="button" class="active" data-filter="all">전체</button>
+    <button type="button" data-filter="high">100만원 이상</button>
+    <button type="button" data-filter="mid">10~99만원</button>
+    <button type="button" data-filter="low">10만원 미만</button>
+  </div>
+
+  <div class="divider"></div>
+  <p class="thanks-note" id="thanksNote">기억을 위한 마음을 보내주신 모든 분께 감사드립니다.</p>
+
+  <!-- 후원자 명단: 이 상자 안에서만 스크롤된다 (내용은 JS가 채운다) -->
+  <div class="donor-panel" id="donorPanel"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="kr">제주 4·3 디지털 아카이브</div>
+    <div class="en">JEJU 4·3 DIGITAL ARCHIVE</div>
+    <p class="msg">제주대학교<br>4·3의 기록과 기억을 보존하고<br>다음 세대에 전합니다.</p>
+    <div class="univ">@ JEJU NATIONAL UNIVERSITY</div>
+    <img class="bloom" src="assets/camellia-line.png" alt="">
+  </footer>
+
+</div>
+</div>
+
+<script src="assets/fit-screen.js"></script>
+<script src="assets/lang-switch.js?v=3"></script>
+<script>
+  // tier: "high"(100만원 이상) / "mid"(10~99만원) / "low"(10만원 미만).
+  // 실제 후원 구간 정보를 알려주시면 각 이름에 채워 넣을게요 — 지금은 구간 없이 "전체"에만 표시됩니다.
+  const DONORS = [
+    { name: "한혜림" }, { name: "김나림" }, { name: "박세빈" },
+    { name: "김재연" }, { name: "양우철" }, { name: "이서연" },
+    { name: "장수아" }, { name: "윤정원" }, { name: "성민규" },
+    { name: "고아령" }, { name: "홍기범" }, { name: "류현진" },
+    { name: "박도윤" }, { name: "노시환" }
+    // ↓ 아래는 스크롤 동작을 보여주기 위한 임시 자리표시자입니다.
+    // 실제 후원자 명단(15번째 분부터)을 알려주시면 이 부분을 그대로 교체할게요.
+    ,
+    { name: "후원자 15" }, { name: "후원자 16" }, { name: "후원자 17" },
+    { name: "후원자 18" }, { name: "후원자 19" }, { name: "후원자 20" },
+    { name: "후원자 21" }, { name: "후원자 22" }, { name: "후원자 23" },
+    { name: "후원자 24" }, { name: "후원자 25" }, { name: "후원자 26" }
+  ];
+
+  // ---------- 다국어 번역 (기계번역 초안 — 공개 전 원어민 검수 권장) ----------
+  const I18N = {
+    ko: {
+      pageTitle: "후원자 명단",
+      lede: "위령비와 디지털 아카이브는<br>후원자분들의 마음이 모여 만들어졌습니다.",
+      filters: { all: "전체", high: "100만원 이상", mid: "10~99만원", low: "10만원 미만" },
+      thanksNote: "기억을 위한 마음을 보내주신 모든 분께 감사드립니다.",
+      emptySuffix: " 구간 정보가<br>아직 등록되지 않았습니다."
+    },
+    en: {
+      pageTitle: "List of Supporters",
+      lede: "The memorial and this digital archive<br>were made possible by our supporters' generosity.",
+      filters: { all: "All", high: "₩1M+", mid: "₩100K–999K", low: "Under 100K" },
+      thanksNote: "Thank you for contributing to this remembrance.",
+      emptySuffix: " tier information<br>has not been registered yet."
+    },
+    zh: {
+      pageTitle: "捐助者名单",
+      lede: "纪念碑与数字档案馆<br>是由各位捐助者的心意汇聚而成。",
+      filters: { all: "全部", high: "100万韩元以上", mid: "10~99万韩元", low: "10万韩元以下" },
+      thanksNote: "感谢每一位为铭记历史献出心意的朋友。",
+      emptySuffix: " 区间的信息<br>尚未登记。"
+    },
+    ja: {
+      pageTitle: "後援者名簿",
+      lede: "慰霊碑とデジタルアーカイブは、<br>後援者の皆様の心が集まって作られました。",
+      filters: { all: "全体", high: "100万ウォン超", mid: "10~99万ウォン", low: "10万ウォン未満" },
+      thanksNote: "記憶のために心を寄せてくださった皆様に感謝します。",
+      emptySuffix: "区間の情報が<br>まだ登録されていません。"
+    }
+  };
+
+  let currentLang = "ko";
+
+  const donorPanel = document.getElementById("donorPanel");
+  const filterButtons = Array.from(document.querySelectorAll(".filter-row button"));
+
+  function render(filter) {
+    const t = I18N[currentLang] || I18N.ko;
+    const list = filter === "all" ? DONORS : DONORS.filter(function (d) { return d.tier === filter; });
+    donorPanel.innerHTML = "";
+
+    if (list.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "donor-empty";
+      empty.innerHTML = t.filters[filter] + t.emptySuffix;
+      donorPanel.appendChild(empty);
+    } else {
+      const grid = document.createElement("div");
+      grid.className = "donor-grid";
+      list.forEach(function (d) {
+        const el = document.createElement("div");
+        el.className = "name";
+        el.textContent = d.name;
+        grid.appendChild(el);
+      });
+      donorPanel.appendChild(grid);
+    }
+    donorPanel.scrollTop = 0;
+    if (window.__fitScreen) window.__fitScreen();
+  }
+
+  function currentFilter() {
+    const active = filterButtons.find(function (b) { return b.classList.contains("active"); });
+    return active ? active.dataset.filter : "all";
+  }
+
+  filterButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      filterButtons.forEach(function (b) { b.classList.toggle("active", b === btn); });
+      render(btn.dataset.filter);
+    });
+  });
+
+  window.__applyLanguage = function (lang) {
+    currentLang = lang;
+    const t = I18N[lang] || I18N.ko;
+    document.getElementById("pageTitle").textContent = t.pageTitle;
+    document.getElementById("lede").innerHTML = t.lede;
+    document.getElementById("thanksNote").textContent = t.thanksNote;
+    filterButtons[0].textContent = t.filters.all;
+    filterButtons[1].textContent = t.filters.high;
+    filterButtons[2].textContent = t.filters.mid;
+    filterButtons[3].textContent = t.filters.low;
+    render(currentFilter());
+  };
+
+  render("all");
+</script>
+</body>
+</html>

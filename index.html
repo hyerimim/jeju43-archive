@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>제주 4·3 디지털 아카이브 | 그날의 기억</title>
+<meta name="description" content="1947년 3월부터 1954년 9월까지, 제주에서 있었던 일들을 사진과 기록, 증언으로 되짚어봅니다.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;700;900&family=Noto+Serif+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css?v=3">
+<style>
+  /* ---------- Video ---------- */
+  .video-wrap{
+    margin: 4px 20px 0;
+    border-radius: 16px;
+    overflow:hidden;
+    position:relative;
+    height: 251px;
+    background: linear-gradient(160deg, var(--olive) 0%, var(--olive-dark) 100%);
+    box-shadow: 0 10px 22px -14px rgba(58,68,41,0.55);
+  }
+  .video-wrap iframe{
+    position:absolute; inset:0; width:100%; height:100%; border:0; z-index:5;
+  }
+  .video-frame{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .video-scrim{
+    position:absolute; inset:0;
+    background: linear-gradient(180deg, rgba(15,16,10,0.7) 0%, rgba(15,16,10,0.18) 42%, rgba(15,16,10,0.6) 100%);
+    pointer-events:none;
+  }
+  .video-facade{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column;
+    cursor:pointer;
+    border:0; padding:0; width:100%; height:100%;
+    background:transparent;
+    font-family:inherit; color:inherit; text-align:left;
+  }
+  .duration-badge{
+    position:absolute;
+    right:12px; bottom:12px;
+    background: rgba(20,22,14,0.55);
+    color:#fff;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.3px;
+    padding: 4px 9px;
+    border-radius:20px;
+    z-index:2;
+  }
+  .play-badge{
+    position:absolute;
+    left:50%; top:50%;
+    transform: translate(-50%,-50%);
+    width: 50px;
+    height: 50px;
+    border-radius:50%;
+    background: rgba(255,255,255,0.92);
+    display:flex; align-items:center; justify-content:center;
+    z-index:2;
+    box-shadow: 0 8px 20px -6px rgba(0,0,0,0.4);
+  }
+  .play-badge svg{ width:18px; height:18px; margin-left:2px; }
+
+  /* ---------- Intro ---------- */
+  .intro{
+    padding: 20px 24px 0;
+  }
+  .eyebrow{
+    margin: 0;
+    color: var(--maroon);
+    font-weight:700;
+    font-size: 11px;
+    letter-spacing: 2px;
+  }
+  .headline{
+    margin: 8px 0 0;
+    font-weight:800;
+    font-size: 31px;
+    line-height:1.2;
+    letter-spacing:-0.5px;
+    color: var(--ink);
+  }
+  /* 언어별 번역 길이가 달라도 한글 버전과 같은 화면 크기를 유지하기 위한 보정 */
+  body.lang-en .headline{ font-size: 25px; }
+  .lede{
+    margin: 10px 0 0;
+    color: var(--ink-soft);
+    font-size: 12.5px;
+    line-height:1.55;
+    font-weight:400;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+
+  .divider{
+    margin: 18px 24px 0;
+    height:1px;
+    background: var(--line);
+  }
+
+  /* ---------- Nav grid ---------- */
+  .grid{
+    margin: 0 24px;
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 22px;
+    row-gap: 0;
+  }
+  .nav-card{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding: 14px 0;
+    text-decoration:none;
+    color: inherit;
+    border-top: 1px solid var(--line);
+  }
+  .nav-card:active{ opacity: 0.6; }
+  .nav-card .index{
+    font-weight:700;
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing:1px;
+  }
+  .nav-card h3{
+    margin: 6px 0 4px;
+    font-size: 16px;
+    font-weight:700;
+    letter-spacing:-0.3px;
+    line-height:1.25;
+    display:-webkit-box;
+    -webkit-line-clamp:1;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .nav-card p{
+    margin:0;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    line-height:1.4;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .nav-card .go{
+    display:inline-block;
+    margin-top: 8px;
+    font-size: 11.5px;
+    font-weight:700;
+    color: var(--maroon);
+  }
+
+</style>
+</head>
+<body>
+<div id="stage">
+<div class="screen" id="screen">
+
+  <!-- Header -->
+  <header class="header">
+    <img class="mark" src="assets/camellia-mark.png" alt="">
+    <span class="title">제주 4·3 디지털 아카이브</span>
+    <div class="lang-wrap">
+      <button class="lang-btn" id="langBtn" aria-label="언어 선택">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.5 3.8 5.5 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.5-3.8-9S9.5 5.5 12 3Z"/></svg>
+      </button>
+      <div class="lang-dropdown" id="langDropdown"></div>
+    </div>
+  </header>
+
+  <!-- Video -->
+  <div class="video-wrap" id="videoWrap">
+    <!--
+      실제 영상 링크는 아래 스크립트의 YOUTUBE_VIDEO_ID에 이미 반영되어 있습니다.
+      썸네일은 assets/video-thumb.jpg(직접 캡처한 장면)가 있으면 그걸 쓰고,
+      없으면 유튜브가 제공하는 실제 영상 프레임(자동 썸네일)을 자동으로 대신 씁니다.
+    -->
+    <img class="video-frame" id="videoFrame" alt="">
+    <div class="video-scrim"></div>
+    <button class="video-facade" id="videoFacade" aria-label="영상 재생">
+      <span class="play-badge">
+        <svg viewBox="0 0 24 24" fill="#3a4429"><path d="M8 5v14l11-7z"/></svg>
+      </span>
+      <span class="duration-badge">4:37</span>
+    </button>
+  </div>
+
+  <!-- Intro -->
+  <div class="intro">
+    <p class="eyebrow">JEJU 4·3 ARCHIVE</p>
+    <h1 class="headline" id="iHeadline">그날의 기억</h1>
+    <p class="lede" id="iLede">1947년 3월부터 1954년 9월까지,<br>제주에서 있었던 일들을 사진과 기록, 증언으로 되짚어봅니다.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Nav grid -->
+  <nav class="grid">
+    <a class="nav-card" href="timeline.html">
+      <div class="index">01</div>
+      <h3 id="c1Title">4·3의 시간</h3>
+      <p id="c1Desc">1947-1954,<br>사건의 흐름을 따라</p>
+      <span class="go" id="c1Go">기록 보기 →</span>
+    </a>
+    <a class="nav-card" href="jnu-archive.html">
+      <div class="index">02</div>
+      <h3 id="c2Title">그때, 제주대학교</h3>
+      <p id="c2Desc">제주대학교에<br>남겨진 4·3의 기록</p>
+      <span class="go" id="c2Go">기록 보기 →</span>
+    </a>
+    <a class="nav-card" href="memorial.html">
+      <div class="index">03</div>
+      <h3 id="c3Title">기억을 세우다</h3>
+      <p id="c3Desc">제주대학교 4·3 기념비</p>
+      <span class="go" id="c3Go">기념비 보기 →</span>
+    </a>
+    <a class="nav-card" href="donors.html">
+      <div class="index">04</div>
+      <h3 id="c4Title">후원자 명단</h3>
+      <p id="c4Desc">기념비를 위해 마음을 모은 분들</p>
+      <span class="go" id="c4Go">후원자 보기 →</span>
+    </a>
+  </nav>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="kr">제주 4·3 디지털 아카이브</div>
+    <div class="en">JEJU 4·3 DIGITAL ARCHIVE</div>
+    <p class="msg">제주대학교<br>4·3의 기록과 기억을 보존하고<br>다음 세대에 전합니다.</p>
+    <div class="univ">@ JEJU NATIONAL UNIVERSITY</div>
+    <img class="bloom" src="assets/camellia-line.png" alt="">
+  </footer>
+
+</div>
+</div>
+
+<script src="assets/fit-screen.js"></script>
+<script src="assets/lang-switch.js?v=3"></script>
+<script>
+  // 실제 유튜브 영상 링크가 정해지면 아래 ID만 교체하면 됩니다.
+  const YOUTUBE_VIDEO_ID = "DHVjPbxuBuk";
+
+  // 썸네일: assets/video-thumb.jpg(직접 캡처한 장면)를 먼저 찾고,
+  // 없으면 유튜브가 제공하는 실제 영상 프레임(자동 썸네일)으로 자동 대체한다.
+  (function () {
+    const frame = document.getElementById("videoFrame");
+    frame.onerror = function () {
+      frame.onerror = null;
+      frame.src = "https://img.youtube.com/vi/" + YOUTUBE_VIDEO_ID + "/hqdefault.jpg";
+    };
+    frame.src = "assets/video-thumb.jpg";
+  })();
+
+  document.getElementById("videoFacade").addEventListener("click", function () {
+    const wrap = document.getElementById("videoWrap");
+    const iframe = document.createElement("iframe");
+    iframe.src = "https://www.youtube.com/embed/" + YOUTUBE_VIDEO_ID + "?autoplay=1&rel=0";
+    iframe.title = "제주 4·3 다큐멘터리 영상";
+    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+    iframe.allowFullscreen = true;
+    this.remove();
+    wrap.appendChild(iframe);
+    if (window.__fitScreen) window.__fitScreen();
+  });
+
+  // ---------- 다국어 번역 (기계번역 초안 — 공개 전 원어민 검수 권장) ----------
+  const I18N = {
+    ko: {
+      headline: "그날의 기억",
+      lede: "1947년 3월부터 1954년 9월까지,<br>제주에서 있었던 일들을 사진과 기록, 증언으로 되짚어봅니다.",
+      c1Title: "4·3의 시간", c1Desc: "1947-1954,<br>사건의 흐름을 따라", c1Go: "기록 보기 →",
+      c2Title: "그때, 제주대학교", c2Desc: "제주대학교에<br>남겨진 4·3의 기록", c2Go: "기록 보기 →",
+      c3Title: "기억을 세우다", c3Desc: "제주대학교 4·3 기념비", c3Go: "기념비 보기 →",
+      c4Title: "후원자 명단", c4Desc: "기념비를 위해 마음을 모은 분들", c4Go: "후원자 보기 →"
+    },
+    en: {
+      headline: "The Memory of That Day",
+      lede: "From March 1947 to September 1954, we revisit what happened in Jeju through photos and records.",
+      c1Title: "The Time of 4·3", c1Desc: "1947–1954,<br>Following the events", c1Go: "View Records →",
+      c2Title: "Jeju Univ., Then", c2Desc: "Records of 4·3<br>at Jeju National Univ.", c2Go: "View Records →",
+      c3Title: "Raising a Memorial", c3Desc: "Jeju National University 4·3 Memorial", c3Go: "View Memorial →",
+      c4Title: "List of Supporters", c4Desc: "Those who contributed to the memorial", c4Go: "View Supporters →"
+    },
+    zh: {
+      headline: "那一天的记忆",
+      lede: "从1947年3月至1954年9月，<br>通过照片、记录与证言，回顾济州岛曾经发生的事。",
+      c1Title: "4·3的时间", c1Desc: "1947-1954年，<br>追溯事件的脉络", c1Go: "查看记录 →",
+      c2Title: "那时，济州大学校", c2Desc: "济州大学校<br>留下的4·3记录", c2Go: "查看记录 →",
+      c3Title: "树立记忆", c3Desc: "济州大学校4·3纪念碑", c3Go: "查看纪念碑 →",
+      c4Title: "捐助者名单", c4Desc: "为纪念碑出一份心意的人们", c4Go: "查看捐助者 →"
+    },
+    ja: {
+      headline: "あの日の記憶",
+      lede: "1947年3月から1954年9月まで、<br>済州島で起きたことを写真と記録、証言で振り返ります。",
+      c1Title: "4·3の時間", c1Desc: "1947-1954年、<br>事件の流れをたどる", c1Go: "記録を見る →",
+      c2Title: "あの頃、済州大学校", c2Desc: "済州大学校に<br>残された4·3の記録", c2Go: "記録を見る →",
+      c3Title: "記憶を刻む", c3Desc: "済州大学校4·3記念碑", c3Go: "記念碑を見る →",
+      c4Title: "後援者名簿", c4Desc: "記念碑に心を寄せた方々", c4Go: "後援者を見る →"
+    }
+  };
+
+  window.__applyLanguage = function (lang) {
+    const t = I18N[lang] || I18N.ko;
+    document.getElementById("iHeadline").textContent = t.headline;
+    document.getElementById("iLede").innerHTML = t.lede;
+    document.getElementById("c1Title").textContent = t.c1Title;
+    document.getElementById("c1Desc").innerHTML = t.c1Desc;
+    document.getElementById("c1Go").textContent = t.c1Go;
+    document.getElementById("c2Title").textContent = t.c2Title;
+    document.getElementById("c2Desc").innerHTML = t.c2Desc;
+    document.getElementById("c2Go").textContent = t.c2Go;
+    document.getElementById("c3Title").textContent = t.c3Title;
+    document.getElementById("c3Desc").innerHTML = t.c3Desc;
+    document.getElementById("c3Go").textContent = t.c3Go;
+    document.getElementById("c4Title").textContent = t.c4Title;
+    document.getElementById("c4Desc").innerHTML = t.c4Desc;
+    document.getElementById("c4Go").textContent = t.c4Go;
+    if (window.__fitScreen) window.__fitScreen();
+  };
+</script>
+</body>
+</html>
