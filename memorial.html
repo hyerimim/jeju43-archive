@@ -24,7 +24,7 @@
   /* ---------- 기념비 사진 / 3D 뷰어 ---------- */
   .memorial-visual{
     position:relative;
-    margin: 20px 24px 0;
+    margin: 0 24px;
     height: 250px;
     border-radius: 14px;
     overflow:hidden;
@@ -54,9 +54,9 @@
   .memorial-visual canvas.ready{ opacity:1; }
   .memorial-visual canvas:active{ cursor:grabbing; }
   .visual-caption{
-    margin: 12px 24px 0;
+    margin: 10px 24px 0;
     text-align:center;
-    font-size: 13px;
+    font-size: 12.5px;
     color: var(--ink-soft);
     white-space:nowrap;
     overflow:hidden;
@@ -66,65 +66,47 @@
   /* ---------- 비문 인용구 ---------- */
   .quote-block{
     margin: 22px 24px 0;
-    padding-left: 14px;
+    padding-left: 15px;
     border-left: 2px solid var(--maroon);
   }
   .quote-text{
-    font-size: 16px;
+    font-size: 15.5px;
     font-weight:700;
-    line-height:1.5;
+    line-height:1.62;
     color: var(--ink);
-    min-height: 90px;
   }
+  .quote-text p{ margin:0; }
+  .quote-text p + p{ margin-top:12px; }
   .quote-attr{
     margin-top: 10px;
     font-size: 11.5px;
     color: var(--ink-soft);
   }
+  /* 영어는 같은 내용이라도 줄 수가 훨씬 많아져 카드 높이가 달라지므로, 글자 크기를 살짝 줄여 맞춘다 */
+  body.lang-en .quote-text{ font-size: 13px; line-height:1.5; }
 
-  /* ---------- 기념비 설명 ---------- */
-  .memorial-desc{
-    margin: 26px 24px 0;
-    text-align:center;
-    font-size: 15px;
-    font-weight:700;
-    line-height:1.7;
-    color: var(--ink);
-    min-height: 66px;
-  }
-
-  /* ---------- 건립 정보 ---------- */
-  .stat-row{
+  /* ---------- 가운데 블록: 타이틀과 푸터 사이 남는 공간에서 수직 중앙에 온다 ---------- */
+  .mid-wrap{
+    flex: 1 1 auto;
+    min-height: 0;
     display:flex;
-    justify-content:space-between;
-    margin: 24px 24px 0;
-    gap: 10px;
+    flex-direction:column;
+    justify-content:center;
   }
-  .stat{
-    flex: 1 1 0;
-    min-width: 0;
-    text-align:left;
-  }
-  .stat .label{
-    font-size: 11px;
-    line-height:1.45;
-    color: var(--ink-soft);
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-  .stat .value{
-    margin-top:4px;
-    font-size: 15px;
-    line-height:1.4;
+  .quote-block{ margin-bottom: 8px; }
+  .meaning-link{
+    display:block;
+    margin: 12px auto 0;
+    width:max-content;
+    font-family: inherit;
+    font-size: 12.5px;
     font-weight:700;
-    letter-spacing:-0.2px;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
+    letter-spacing:0.1px;
+    color: var(--maroon);
+    text-decoration:none;
+    border-bottom: 1px solid rgba(138,63,54,0.35);
+    padding-bottom: 3px;
   }
-  /* 언어별로 글자 길이가 달라도 한글 버전과 같은 화면 크기를 유지하기 위한 보정 */
-  body.lang-en .stat .value{ font-size: 12px; }
 
 </style>
 </head>
@@ -149,6 +131,7 @@
 
   <h1 class="page-title" id="pageTitle">기억을 세우다</h1>
 
+  <div class="mid-wrap">
   <!-- 기념비: 실제 3D 모델(assets/memorial.glb)이 생기면 자동으로 그걸 불러와 보여주고,
        아직은 없으니 대신 예시 기념비 모양(직접 그린 3D 도형)을 돌려볼 수 있게 보여준다. -->
   <div class="memorial-visual" id="memorialVisual">
@@ -170,27 +153,10 @@
 
   <!-- 비문 -->
   <div class="quote-block">
-    <div class="quote-text" id="quoteText">"비문 내용"</div>
-    <div class="quote-attr" id="quoteAttr">비문 중에서 - 2026년</div>
+    <div class="quote-text" id="quoteText"><p>제주 4·3 정신은 부당한 현실 속에서 희생된 이들을 깊이 애도하고, 불의에 굴하지 않은 채 오랜 침묵을 깨뜨려 진실을 밝혀낸 용기입니다.</p><p>이곳 제주대학교는 그 용기로 시작된 4·3 진상규명의 발원지입니다. 선배들이 외쳤던 진실과 정의의 목소리를 기억하며, 우리는 화해와 포용, 평화와 인권의 가치를 멈추지 않고 미래세대에 이어가겠습니다.</p></div>
+    <div class="quote-attr" id="quoteAttr">비문</div>
   </div>
-
-  <!-- 기념비 설명 -->
-  <p class="memorial-desc" id="memorialDesc">기념비 설명</p>
-
-  <!-- 건립 정보 -->
-  <div class="stat-row">
-    <div class="stat">
-      <div class="label" id="statLabel1">[건립 연도]</div>
-      <div class="value" id="statValue1">2026년</div>
-    </div>
-    <div class="stat">
-      <div class="label" id="statLabel2">[건립 주체]</div>
-      <div class="value" id="statValue2">제주대학교</div>
-    </div>
-    <div class="stat">
-      <div class="label" id="statLabel3">[건립 위치]</div>
-      <div class="value" id="statValue3">동백 정원</div>
-    </div>
+  <a class="meaning-link" id="meaningLink" href="memorial-meaning.html">비석에 새긴 이야기 더 보기 →</a>
   </div>
 
   <!-- Footer -->
@@ -320,64 +286,54 @@
       pageTitle: "기억을 세우다",
       captionPlaceholder: "예시 기념비 3D예요 — 손가락으로 밀어 돌려보세요",
       captionReady: "손가락으로 밀어 기념비를 돌려보세요",
-      quoteText: "\"비문 내용\"",
-      quoteAttr: "비문 중에서 - 2026년",
-      memorialDesc: "기념비 설명",
-      statLabel1: "[건립 연도]", statValue1: "2026년",
-      statLabel2: "[건립 주체]", statValue2: "제주대학교",
-      statLabel3: "[건립 위치]", statValue3: "동백 정원"
+      quoteText: "제주 4·3 정신은 부당한 현실 속에서 희생된 이들을 깊이 애도하고, 불의에 굴하지 않은 채 오랜 침묵을 깨뜨려 진실을 밝혀낸 용기입니다.\n\n이곳 제주대학교는 그 용기로 시작된 4·3 진상규명의 발원지입니다. 선배들이 외쳤던 진실과 정의의 목소리를 기억하며, 우리는 화해와 포용, 평화와 인권의 가치를 멈추지 않고 미래세대에 이어가겠습니다.",
+      quoteAttr: "비문",
+      meaningLink: "비석에 새긴 이야기 더 보기 →"
     },
     en: {
       pageTitle: "Raising a Memorial",
       captionPlaceholder: "This is a sample 3D memorial — drag to rotate",
       captionReady: "Drag to rotate the memorial",
-      quoteText: "\"Inscription text\"",
-      quoteAttr: "From the inscription - 2026",
-      memorialDesc: "Memorial description",
-      statLabel1: "[Year Built]", statValue1: "2026",
-      statLabel2: "[Built By]", statValue2: "Jeju Univ.",
-      statLabel3: "[Location]", statValue3: "Camellia Garden"
+      quoteText: "The spirit of Jeju April 3rd is the courage to deeply mourn those sacrificed under an unjust reality, and to break a long silence — without yielding to injustice — to bring the truth to light.\n\nThis place, Jeju National University, is the wellspring from which the truth-finding movement for April 3rd began, born of that courage. Remembering the voices of truth and justice raised by those who came before us, we will carry forward, without pause, the values of reconciliation, inclusion, peace, and human rights to future generations.",
+      quoteAttr: "Inscription",
+      meaningLink: "More on what it means →"
     },
     zh: {
       pageTitle: "树立记忆",
       captionPlaceholder: "这是示例纪念碑3D模型 — 用手指滑动即可旋转",
       captionReady: "用手指滑动旋转纪念碑",
-      quoteText: "\"碑文内容\"",
-      quoteAttr: "摘自碑文 - 2026年",
-      memorialDesc: "纪念碑说明",
-      statLabel1: "[建立年度]", statValue1: "2026年",
-      statLabel2: "[建立主体]", statValue2: "济州大学校",
-      statLabel3: "[建立位置]", statValue3: "山茶花庭院"
+      quoteText: "济州4·3精神，是深切哀悼在不公现实中牺牲的人们，不向不义屈服、打破长久沉默、揭示真相的勇气。\n\n这里，济州大学校，正是由那份勇气开启的4·3真相调查运动的发源地。铭记前辈们曾喊出的真相与正义之声，我们将不懈地把和解与包容、和平与人权的价值传递给未来的世代。",
+      quoteAttr: "碑文",
+      meaningLink: "查看碑石的故事 →"
     },
     ja: {
       pageTitle: "記憶を刻む",
       captionPlaceholder: "記念碑の3D例です — 指で回してみてください",
       captionReady: "指で押して記念碑を回してみてください",
-      quoteText: "「碑文の内容」",
-      quoteAttr: "碑文より - 2026年",
-      memorialDesc: "記念碑の説明",
-      statLabel1: "[建立年度]", statValue1: "2026年",
-      statLabel2: "[建立主体]", statValue2: "済州大学校",
-      statLabel3: "[建立場所]", statValue3: "椿庭園"
+      quoteText: "済州4·3の精神とは、不当な現実の中で犠牲になった人々を深く哀悼し、不義に屈することなく長い沈黙を破って真実を明らかにした勇気です。\n\nこの済州大学校は、その勇気から始まった4·3真相究明の発源地です。先輩たちが叫んだ真実と正義の声を記憶しながら、私たちは和解と包容、平和と人権の価値を止めることなく未来世代へと受け継いでいきます。",
+      quoteAttr: "碑文",
+      meaningLink: "碑石に込めた物語を見る →"
     }
   };
 
   let currentLang = "ko";
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  // 문단 구분(빈 줄)마다 <p>로 감싼다
+  function formatParagraphs(text) {
+    return text.split("\n\n").map(function (p) { return "<p>" + escapeHtml(p) + "</p>"; }).join("");
+  }
 
   window.__applyLanguage = function (lang) {
     currentLang = lang;
     const t = I18N[lang] || I18N.ko;
     document.getElementById("pageTitle").textContent = t.pageTitle;
     caption.textContent = modelReady ? t.captionReady : t.captionPlaceholder;
-    document.getElementById("quoteText").textContent = t.quoteText;
+    document.getElementById("quoteText").innerHTML = formatParagraphs(t.quoteText);
     document.getElementById("quoteAttr").textContent = t.quoteAttr;
-    document.getElementById("memorialDesc").textContent = t.memorialDesc;
-    document.getElementById("statLabel1").textContent = t.statLabel1;
-    document.getElementById("statValue1").textContent = t.statValue1;
-    document.getElementById("statLabel2").textContent = t.statLabel2;
-    document.getElementById("statValue2").textContent = t.statValue2;
-    document.getElementById("statLabel3").textContent = t.statLabel3;
-    document.getElementById("statValue3").textContent = t.statValue3;
+    document.getElementById("meaningLink").textContent = t.meaningLink;
     if (window.__fitScreen) window.__fitScreen();
   };
 </script>

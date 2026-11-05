@@ -30,7 +30,14 @@
       // 잘리지 않도록 둘 중 더 큰 값을 기준으로 삼는다.
       const refH = Math.max(DESIGN_HEIGHT, naturalH);
       const vp = viewportSize();
-      const scale = Math.min(vp.w / naturalW, vp.h / refH, 1);
+      // 휴대폰마다 화면 비율이 조금씩 달라서, 가로를 먼저 꽉 채우고
+      // (대부분의 폰에서 좌우 여백 없이 꽉 차게 보인다) 그 결과 세로가 화면을 넘치는
+      // 드문 경우(가로로 넓고 낮은 화면)에만 세로 기준으로 다시 맞춘다.
+      let scale = vp.w / naturalW;
+      if (refH * scale > vp.h) {
+        scale = vp.h / refH;
+      }
+      scale = Math.min(scale, 1);
       screenEl.style.transform = "scale(" + scale + ")";
     }
 

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>기념비에 담긴 의미 | 제주 4·3 디지털 아카이브</title>
+<meta name="description" content="제주대학교 4·3 정신계승기념비 — 비석의 형태와 새겨진 문구, 그 안에 담긴 뜻을 하나씩 짚어봅니다.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;700;900&family=Noto+Serif+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css?v=3">
+<style>
+  .title-row{
+    display:flex;
+    align-items:flex-start;
+    gap: 8px;
+    margin: 6px 24px 0;
+  }
+  .back-btn{ margin-top: 2px; }
+  .page-title{
+    margin: 0;
+    font-weight:800;
+    font-size: 28px;
+    letter-spacing:-0.5px;
+    color: var(--ink);
+  }
+  .back-btn{
+    display:flex;
+    align-items:center;
+    gap: 2px;
+    flex-shrink:0;
+    padding: 4px 2px;
+    color: var(--ink-soft);
+  }
+  .back-btn svg{ width:20px; height:20px; }
+  .back-btn:active{ opacity:0.6; }
+
+  /* ---------- 이 안에서만 스크롤 (도면 + 범례 + 배경 + 비문) ---------- */
+  .meaning-panel{
+    margin: 16px 24px 18px;
+    padding-right: 10px;
+    padding-bottom: 20px;
+    height: 544px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #c9a49c rgba(138,63,54,0.07);
+  }
+  .meaning-panel::-webkit-scrollbar{ width:6px; }
+  .meaning-panel::-webkit-scrollbar-track{ background: rgba(138,63,54,0.07); border-radius: 999px; }
+  .meaning-panel::-webkit-scrollbar-thumb{ background: rgba(138,63,54,0.45); border-radius: 999px; }
+  .meaning-panel::-webkit-scrollbar-thumb:hover{ background: rgba(138,63,54,0.65); }
+
+  /* ---------- 도면: 기념비 렌더링 사진 + 번호 인출선 ---------- */
+  .diagram-box{
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 2px;
+  }
+  .diagram-box svg{ display:block; width:100%; height:auto; }
+  .photo-border{ fill:none; stroke: var(--line); stroke-width:1; }
+  .callout{ cursor:pointer; }
+  .callout .leader{
+    stroke: var(--maroon);
+    stroke-width:1;
+    stroke-dasharray: 2 3;
+    opacity:.55;
+    transition: opacity .15s ease;
+  }
+  .callout .pt{ fill: var(--maroon); }
+  .callout .badge-c{
+    fill: var(--bg);
+    stroke: var(--maroon);
+    stroke-width:1.4;
+    transition: fill .15s ease;
+  }
+  .callout .badge-t{
+    fill: var(--maroon);
+    font-weight:700;
+    font-size:11px;
+    font-family:"Noto Serif KR","Noto Serif JP",serif;
+    text-anchor:middle;
+    transition: fill .15s ease;
+  }
+  .callout.active .leader{ opacity:1; stroke-width:1.5; }
+  .callout.active .badge-c{ fill: var(--maroon); }
+  .callout.active .badge-t{ fill:#fff; }
+
+  /* ---------- 범례: 번호 탭하면 위 도면과 서로 반응한다 ---------- */
+  .legend{ margin: 18px 2px 0; }
+  .legend-item{
+    display:flex;
+    align-items:flex-start;
+    gap: 11px;
+    padding: 11px 8px;
+    border-radius: 10px;
+    cursor:pointer;
+    transition: background .15s ease;
+  }
+  .legend-item.active{ background: rgba(138,63,54,0.08); }
+  .legend-num{
+    flex-shrink:0;
+    width:21px; height:21px;
+    margin-top:1px;
+    border-radius:50%;
+    border: 1.4px solid var(--maroon);
+    color: var(--maroon);
+    font-size:11px;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition: background .15s ease, color .15s ease;
+  }
+  .legend-item.active .legend-num{ background: var(--maroon); color:#fff; }
+  .legend-text .t{
+    font-size:13.5px;
+    font-weight:700;
+    color: var(--ink);
+    margin-bottom:3px;
+  }
+  .legend-text .d{
+    font-size:12px;
+    line-height:1.55;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- 건립 배경과 상징 ---------- */
+  .bg-section{
+    margin: 26px 2px 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+  .section-eyebrow{
+    font-size: 11px;
+    font-weight:700;
+    letter-spacing:0.4px;
+    color: var(--maroon);
+    margin-bottom: 8px;
+  }
+  .bg-text{
+    font-size: 13px;
+    line-height:1.7;
+    color: var(--ink);
+  }
+
+  /* ---------- 앞으로, 이 공간은: 활용 계획 ---------- */
+  .plan-section{
+    margin: 26px 2px 0;
+    padding-top: 20px;
+    padding-bottom: 4px;
+    border-top: 1px solid var(--line);
+  }
+  .plan-intro{
+    font-size: 13px;
+    line-height:1.65;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+  .plan-list{
+    list-style:none;
+    margin:0;
+    padding:0;
+  }
+  .plan-list li{
+    position:relative;
+    display:flex;
+    align-items:baseline;
+    gap: 6px;
+    padding: 9px 0 9px 14px;
+    font-size: 12.5px;
+    line-height:1.6;
+    color: var(--ink-soft);
+    border-bottom: 1px dotted var(--line);
+  }
+  .plan-list li:last-child{ border-bottom:0; }
+  .plan-list li::before{
+    content:"";
+    position:absolute;
+    left:0; top:16px;
+    width:5px; height:5px;
+    border-radius:50%;
+    background: var(--maroon);
+  }
+  .plan-list .plan-label{
+    flex-shrink:0;
+    white-space:nowrap;
+    color: var(--ink);
+    font-weight:700;
+  }
+  .plan-list .plan-desc{
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+</style>
+</head>
+<body>
+<div id="stage">
+<div class="screen" id="screen">
+
+  <!-- Header -->
+  <header class="header">
+    <img class="mark" src="assets/camellia-mark.png" alt="">
+    <span class="title">제주 4·3 디지털 아카이브</span>
+    <div class="lang-wrap">
+      <button class="lang-btn" id="langBtn" aria-label="언어 선택">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.5 3.8 5.5 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.5-3.8-9S9.5 5.5 12 3Z"/></svg>
+      </button>
+      <div class="lang-dropdown" id="langDropdown"></div>
+    </div>
+    <a class="home-btn" href="index.html" aria-label="홈으로">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg>
+    </a>
+  </header>
+
+  <div class="title-row">
+    <a class="back-btn" href="memorial.html" aria-label="뒤로">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+    </a>
+    <h1 class="page-title" id="pageTitle">기념비에 담긴 의미</h1>
+  </div>
+
+  <div class="meaning-panel" id="meaningPanel">
+
+    <!-- 도면: 기념비 렌더링 사진 + 번호 인출선 -->
+    <div class="diagram-box">
+      <svg viewBox="0 0 342 288" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="photoClip">
+            <rect x="40" y="40" width="262" height="197" rx="10"/>
+          </clipPath>
+        </defs>
+        <image href="assets/memorial-render.png" x="40" y="40" width="262" height="197" clip-path="url(#photoClip)" preserveAspectRatio="xMidYMid slice"/>
+        <rect class="photo-border" x="40.5" y="40.5" width="261" height="196" rx="9.5"/>
+
+        <!-- ① 비석 몸체 -->
+        <g class="callout active" data-idx="1">
+          <line class="leader" x1="212" y1="80" x2="212" y2="30"/>
+          <circle class="pt" cx="212" cy="80" r="3"/>
+          <circle class="badge-c" cx="212" cy="18" r="12"/>
+          <text class="badge-t" x="212" y="18" dy="0.35em">1</text>
+        </g>
+        <!-- ② 새겨진 문구 -->
+        <g class="callout" data-idx="2">
+          <line class="leader" x1="212" y1="126" x2="310" y2="126"/>
+          <circle class="pt" cx="212" cy="126" r="3"/>
+          <circle class="badge-c" cx="322" cy="126" r="12"/>
+          <text class="badge-t" x="322" y="126" dy="0.35em">2</text>
+        </g>
+        <!-- ③ 2단 현무암 기단 -->
+        <g class="callout" data-idx="3">
+          <line class="leader" x1="212" y1="201" x2="212" y2="254"/>
+          <circle class="pt" cx="212" cy="201" r="3"/>
+          <circle class="badge-c" cx="212" cy="266" r="12"/>
+          <text class="badge-t" x="212" y="266" dy="0.35em">3</text>
+        </g>
+        <!-- ④ 안내판과 QR -->
+        <g class="callout" data-idx="4">
+          <line class="leader" x1="96" y1="148" x2="30" y2="148"/>
+          <circle class="pt" cx="96" cy="148" r="3"/>
+          <circle class="badge-c" cx="18" cy="148" r="12"/>
+          <text class="badge-t" x="18" y="148" dy="0.35em">4</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- 범례 -->
+    <div class="legend" id="legend">
+      <div class="legend-item active" data-idx="1">
+        <div class="legend-num">1</div>
+        <div class="legend-text">
+          <div class="t" id="t1">솟아오른 비석</div>
+          <div class="d" id="d1">바람에 흩날리는 대자보 모양을 본떴습니다. 억압을 뚫고 터져 나온 학생들의 목소리를 상징합니다.</div>
+        </div>
+      </div>
+      <div class="legend-item" data-idx="2">
+        <div class="legend-num">2</div>
+        <div class="legend-text">
+          <div class="t" id="t2">새겨진 문구</div>
+          <div class="d" id="d2">「기억에서 진실로, 진실에서 평화로」 — 진상규명 활동과 기억·평화의 가치를 돌에 새겼습니다.</div>
+        </div>
+      </div>
+      <div class="legend-item" data-idx="3">
+        <div class="legend-num">3</div>
+        <div class="legend-text">
+          <div class="t" id="t3">2단 현무암 기단</div>
+          <div class="d" id="d3">구멍 뚫린 제주 현무암을 두 겹으로 쌓았습니다. 수많은 시련 속에서도 역사를 지켜온 제주의 땅과 공동체를 상징합니다.</div>
+        </div>
+      </div>
+      <div class="legend-item" data-idx="4">
+        <div class="legend-num">4</div>
+        <div class="legend-text">
+          <div class="t" id="t4">안내판과 QR</div>
+          <div class="d" id="d4">핵심 문구 "침묵을 깨뜨린 목소리, 이어지는 기억"을 새긴 안내판입니다. QR코드로 디지털 아카이브와 후원자 명단도 확인할 수 있어요.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 건립 배경과 상징 -->
+    <div class="bg-section">
+      <div class="section-eyebrow" id="bgEyebrow">건립 배경</div>
+      <p class="bg-text" id="bgText">군사정권 시기, 제주대학교 학생들은 대자보와 위령제로 금기였던 4·3을 세상에 알렸습니다. 증언으로 이어 온 기억이 끊기기 전에 그 활동을 기록하고, 다음 세대가 그 뜻을 이어가도록 이 기념비를 세웁니다.</p>
+    </div>
+
+    <!-- 앞으로, 이 공간은: 활용 계획 -->
+    <div class="plan-section">
+      <div class="section-eyebrow" id="planEyebrow">앞으로, 이 공간은</div>
+      <p class="plan-intro" id="planIntro">기념비는 세워지는 것으로 끝나지 않습니다. 제주대학교 동백정원은 이렇게 쓰일 예정입니다.</p>
+      <ul class="plan-list" id="planList">
+        <li><span class="plan-label"><span id="plan1t">4·3 추모식</span> —</span><span class="plan-desc" id="plan1d">매년 4월 3일 또는 4·3 추념기간에 학생·교직원·동문 등이 참여하는 추모식 개최</span></li>
+        <li><span class="plan-label"><span id="plan2t">헌화와 묵념</span> —</span><span class="plan-desc" id="plan2d">학생들이 자율적으로 방문하여 헌화하고 묵념하도록 함</span></li>
+        <li><span class="plan-label"><span id="plan3t">문화·예술 프로그램</span> —</span><span class="plan-desc" id="plan3d">추모 전시, 사진전, 시화전, 4·3 관련 강연, 학생 작품 전시 등 다양한 프로그램 진행</span></li>
+        <li><span class="plan-label"><span id="plan4t">학생 참여 프로그램</span> —</span><span class="plan-desc" id="plan4d">학생들이 직접 4·3 관련 문구, 기억의 글, 추모 메시지 등을 작성하여 기록하는 프로그램 운영</span></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="kr">제주 4·3 디지털 아카이브</div>
+    <div class="en">JEJU 4·3 DIGITAL ARCHIVE</div>
+    <p class="msg">제주대학교<br>4·3의 기록과 기억을 보존하고<br>다음 세대에 전합니다.</p>
+    <div class="univ">@ JEJU NATIONAL UNIVERSITY</div>
+    <img class="bloom" src="assets/camellia-line.png" alt="">
+  </footer>
+
+</div>
+</div>
+
+<script src="assets/fit-screen.js"></script>
+<script src="assets/lang-switch.js?v=3"></script>
+<script>
+  // ---------- 다국어 번역 (기계번역 초안 — 공개 전 원어민 검수 권장) ----------
+  const I18N = {
+    ko: {
+      pageTitle: "기념비에 담긴 의미",
+      items: [
+        { t: "솟아오른 비석", d: "바람에 흩날리는 대자보 모양을 본떴습니다. 억압을 뚫고 터져 나온 학생들의 목소리를 상징합니다." },
+        { t: "새겨진 문구", d: "「기억에서 진실로, 진실에서 평화로」 — 진상규명 활동과 기억·평화의 가치를 돌에 새겼습니다." },
+        { t: "2단 현무암 기단", d: "구멍 뚫린 제주 현무암을 두 겹으로 쌓았습니다. 수많은 시련 속에서도 역사를 지켜온 제주의 땅과 공동체를 상징합니다." },
+        { t: "안내판과 QR", d: "핵심 문구 \"침묵을 깨뜨린 목소리, 이어지는 기억\"을 새긴 안내판입니다. QR코드로 디지털 아카이브와 후원자 명단도 확인할 수 있어요." }
+      ],
+      bgEyebrow: "건립 배경",
+      bgText: "군사정권 시기, 제주대학교 학생들은 대자보와 위령제로 금기였던 4·3을 세상에 알렸습니다. 증언으로 이어 온 기억이 끊기기 전에 그 활동을 기록하고, 다음 세대가 그 뜻을 이어가도록 이 기념비를 세웁니다.",
+      planEyebrow: "앞으로, 이 공간은",
+      planIntro: "기념비는 세워지는 것으로 끝나지 않습니다. 제주대학교 동백정원은 이렇게 쓰일 예정입니다.",
+      plan: [
+        { t: "4·3 추모식", d: "매년 4월 3일 또는 4·3 추념기간에 학생·교직원·동문 등이 참여하는 추모식 개최" },
+        { t: "헌화와 묵념", d: "학생들이 자율적으로 방문하여 헌화하고 묵념하도록 함" },
+        { t: "문화·예술 프로그램", d: "추모 전시, 사진전, 시화전, 4·3 관련 강연, 학생 작품 전시 등 다양한 프로그램 진행" },
+        { t: "학생 참여 프로그램", d: "학생들이 직접 4·3 관련 문구, 기억의 글, 추모 메시지 등을 작성하여 기록하는 프로그램 운영" }
+      ]
+    },
+    en: {
+      pageTitle: "What the Memorial Means",
+      items: [
+        { t: "The rising stele", d: "Shaped after a poster fluttering in the wind — the students' voices breaking through." },
+        { t: "The inscribed words", d: "“From memory to truth, from truth to peace.”" },
+        { t: "The two-tier basalt base", d: "Jeju's own black basalt, stacked in two layers — the land and community that endured." },
+        { t: "The plaque and QR code", d: "Carries the line “A silence broken, a memory carried on,” plus a QR code to the digital archive and donor list." }
+      ],
+      bgEyebrow: "Background",
+      bgText: "Under military rule, Jeju National University students broke the taboo around April 3rd with posters and memorial services. This monument records that history before living testimony fades, so the next generation can carry it forward.",
+      planEyebrow: "Going forward",
+      planIntro: "The memorial doesn't end with its unveiling. Here is how the Camellia Garden will be used.",
+      plan: [
+        { t: "April 3rd memorial service", d: "Held every year on or around April 3rd, with students, staff and alumni taking part" },
+        { t: "Flowers and a moment of silence", d: "Students may visit freely at any time to lay flowers and pay their respects" },
+        { t: "Culture & arts programs", d: "Memorial exhibitions, photo shows, poetry displays, talks, and student artwork" },
+        { t: "Student participation", d: "A program where students write and leave their own words of memory and remembrance" }
+      ]
+    },
+    zh: {
+      pageTitle: "纪念碑的含义",
+      items: [
+        { t: "耸立的碑石", d: "形似风中飘扬的大字报，象征冲破压迫、喷薄而出的学生之声。" },
+        { t: "刻下的文字", d: "「从记忆到真相，从真相到和平」。" },
+        { t: "两层玄武岩基座", d: "济州黑色玄武岩两层叠砌，象征历经磨难仍守护历史的土地与共同体。" },
+        { t: "说明牌与二维码", d: "刻有“打破沉默的声音，延续的记忆”，并附二维码链接数字档案与捐助者名单。" }
+      ],
+      bgEyebrow: "建立背景",
+      bgText: "在军事政权时期，济州大学的学生们通过大字报和追悼会打破了关于4·3的禁忌。在口述记忆消失之前，这座纪念碑记录下那段历史，让下一代得以传承其精神。",
+      planEyebrow: "今后，这个空间",
+      planIntro: "纪念碑的落成并不是终点。济州大学山茶花庭院今后将这样使用。",
+      plan: [
+        { t: "4·3追悼仪式", d: "每年4月3日或4·3追忆期间，举办师生校友共同参与的追悼仪式" },
+        { t: "献花与默哀", d: "学生可自主前来献花、默哀" },
+        { t: "文化艺术项目", d: "举办追悼展览、摄影展、诗画展、相关讲座、学生作品展等多种文化艺术项目" },
+        { t: "学生参与项目", d: "学生亲手写下与4·3相关的文字、记忆与追悼留言并予以记录" }
+      ]
+    },
+    ja: {
+      pageTitle: "記念碑に込めた意味",
+      items: [
+        { t: "そびえ立つ碑石", d: "風にはためくビラの形を模しました。抑圧を突き破って出た学生たちの声を象徴します。" },
+        { t: "刻まれた言葉", d: "「記憶から真実へ、真実から平和へ」。" },
+        { t: "二段の玄武岩の台座", d: "穴の開いた済州の玄武岩を二段に積みました。幾多の試練の中でも歴史を守ってきた済州の地と共同体を象徴します。" },
+        { t: "案内板とQRコード", d: "「沈黙を破った声、続く記憶」という言葉を刻んだ案内板です。QRコードでデジタルアーカイブと後援者名簿も確認できます。" }
+      ],
+      bgEyebrow: "建立の背景",
+      bgText: "軍事政権下、済州大学校の学生たちはビラと慰霊祭で、タブーとされた4・3を世に知らせました。証言による記憶が途絶える前にその活動を記録し、次の世代へと受け継ぐためにこの記念碑を建てます。",
+      planEyebrow: "これから、この場所は",
+      planIntro: "記念碑は建てて終わりではありません。済州大学校の椿庭園はこれからこのように使われます。",
+      plan: [
+        { t: "4・3追悼式", d: "毎年4月3日または4・3追念期間に、学生・教職員・同窓生らが参加する追悼式を開催" },
+        { t: "献花と黙祷", d: "学生が自律的に訪れ、献花と黙祷ができるようにする" },
+        { t: "文化・芸術プログラム", d: "追悼展示、写真展、詩画展、4・3関連講演、学生作品展など多様なプログラムを実施" },
+        { t: "学生参加プログラム", d: "学生が直接4・3に関する言葉や記憶、追悼メッセージなどを書き残すプログラムを運営" }
+      ]
+    }
+  };
+
+  let currentLang = "ko";
+
+  window.__applyLanguage = function (lang) {
+    currentLang = lang;
+    const t = I18N[lang] || I18N.ko;
+    document.getElementById("pageTitle").textContent = t.pageTitle;
+    t.items.forEach(function (item, i) {
+      document.getElementById("t" + (i + 1)).textContent = item.t;
+      document.getElementById("d" + (i + 1)).textContent = item.d;
+    });
+    document.getElementById("bgEyebrow").textContent = t.bgEyebrow;
+    document.getElementById("bgText").textContent = t.bgText;
+    document.getElementById("planEyebrow").textContent = t.planEyebrow;
+    document.getElementById("planIntro").textContent = t.planIntro;
+    t.plan.forEach(function (item, i) {
+      document.getElementById("plan" + (i + 1) + "t").textContent = item.t;
+      document.getElementById("plan" + (i + 1) + "d").textContent = item.d;
+    });
+    if (window.__fitScreen) window.__fitScreen();
+  };
+
+  // ---------- 도면 번호 ↔ 범례: 서로 눌러서 하이라이트 ----------
+  const callouts = Array.from(document.querySelectorAll(".callout"));
+  const legendItems = Array.from(document.querySelectorAll(".legend-item"));
+
+  function setActive(idx) {
+    const isActive = document.querySelector('.callout[data-idx="' + idx + '"]').classList.contains("active");
+    const next = isActive ? null : idx;
+    callouts.forEach(function (c) { c.classList.toggle("active", c.dataset.idx === next); });
+    legendItems.forEach(function (it) { it.classList.toggle("active", it.dataset.idx === next); });
+  }
+
+  callouts.forEach(function (c) {
+    c.addEventListener("click", function () { setActive(c.dataset.idx); });
+  });
+  legendItems.forEach(function (it) {
+    it.addEventListener("click", function () { setActive(it.dataset.idx); });
+  });
+</script>
+</body>
+</html>

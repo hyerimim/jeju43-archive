@@ -23,54 +23,34 @@
     line-height:1.6;
     color: var(--ink-soft);
   }
-
-  /* ---------- 금액 구간 필터: 4개가 한 줄에 항상 다 들어오도록 ---------- */
-  .filter-row{
-    margin-top: 18px;
-    padding: 0 24px;
+  .thanks-row{
     display:flex;
-    gap: 5px;
+    align-items:center;
+    justify-content:center;
+    gap: 7px;
+    margin: 34px 14px 26px;
   }
-  .filter-row button{
-    flex: 1 1 0;
-    min-width:0;
-    border: 1.5px solid var(--line);
-    background: transparent;
-    color: var(--ink);
-    border-radius: 999px;
-    padding: 9px 4px;
-    font-family: "Noto Serif KR", "Noto Serif JP", serif;
-    font-size: 10px;
-    font-weight:700;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    text-align:center;
-    cursor:pointer;
-  }
-  .filter-row button.active{
-    background: var(--maroon);
-    border-color: var(--maroon);
-    color: #fff;
-  }
-
-  .divider{
-    margin: 18px 24px 0;
-    height:1px;
-    background: var(--line);
+  .thanks-row img{
+    width: 23px;
+    height:auto;
+    flex-shrink:0;
+    transform: translateY(3px);
   }
   .thanks-note{
-    margin: 14px 24px 0;
-    text-align:center;
-    font-size: 12px;
-    color: var(--ink-soft);
+    margin:0;
+    font-size: 14px;
+    font-weight:700;
+    letter-spacing:0.1px;
+    color: var(--maroon);
+    white-space:nowrap;
   }
 
   /* ---------- 후원자 명단: 이 영역만 내부 스크롤 (테두리 없이, 다른 텍스트와 같은 여백으로 정렬) ---------- */
   .donor-panel{
-    margin: 24px 24px 0;
+    margin: 18px 24px 0;
     padding-right: 10px;
-    height: 415px;
+    padding-bottom: 10px;
+    height: 500px;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #c9a49c rgba(138,63,54,0.07);
@@ -79,12 +59,59 @@
   .donor-panel::-webkit-scrollbar-track{ background: rgba(138,63,54,0.07); border-radius: 999px; }
   .donor-panel::-webkit-scrollbar-thumb{ background: rgba(138,63,54,0.45); border-radius: 999px; }
   .donor-panel::-webkit-scrollbar-thumb:hover{ background: rgba(138,63,54,0.65); }
+
+  /* ---------- 구간 제목: 양옆에 선이 들어간 소제목 ---------- */
+  .tier-section{ margin-top: 26px; }
+  .tier-section:first-child{ margin-top: 0; }
+  .tier-head{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    margin: 0 0 10px;
+  }
+  .tier-head::before, .tier-head::after{
+    content:"";
+    flex: 1 1 auto;
+    height:1px;
+    background: var(--line);
+  }
+  .tier-head span{
+    font-size: 11.5px;
+    font-weight:700;
+    letter-spacing: 0.4px;
+    color: var(--maroon);
+    white-space:nowrap;
+  }
+
+  /* 1만원 이상: 이름 + 금액이 점선으로 연결되는 한 줄 */
+  .donor-row{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap: 10px;
+    padding: 9px 1px;
+    border-bottom: 1px dotted var(--line);
+    font-size: 13.5px;
+  }
+  .donor-row:last-child{ border-bottom: 0; }
+  .donor-row .nm{
+    font-weight:600;
+    color: var(--ink);
+    flex-shrink:0;
+  }
+  .donor-row .amt{
+    font-size: 12px;
+    font-weight:600;
+    color: var(--ink-soft);
+    flex-shrink:0;
+  }
+
+  /* 1만원 미만: 이름만, 3열 그리드 */
   .donor-grid{
     display:grid;
     grid-template-columns: repeat(3, 1fr);
     column-gap: 14px;
     row-gap: 0;
-    padding-bottom: 4px;
   }
   .donor-grid .name{
     padding: 0 0 12px;
@@ -93,13 +120,6 @@
     font-size: 14.5px;
     font-weight:600;
     color: var(--ink);
-  }
-  .donor-empty{
-    padding: 40px 4px 0;
-    text-align:center;
-    font-size: 12.5px;
-    color: var(--ink-soft);
-    line-height:1.6;
   }
 
 </style>
@@ -126,19 +146,13 @@
   <h1 class="page-title" id="pageTitle">후원자 명단</h1>
   <p class="lede" id="lede">위령비와 디지털 아카이브는<br>후원자분들의 마음이 모여 만들어졌습니다.</p>
 
-  <!-- 금액 구간 필터 -->
-  <div class="filter-row" id="filterRow">
-    <button type="button" class="active" data-filter="all">전체</button>
-    <button type="button" data-filter="high">100만원 이상</button>
-    <button type="button" data-filter="mid">10~99만원</button>
-    <button type="button" data-filter="low">10만원 미만</button>
-  </div>
-
-  <div class="divider"></div>
-  <p class="thanks-note" id="thanksNote">기억을 위한 마음을 보내주신 모든 분께 감사드립니다.</p>
-
   <!-- 후원자 명단: 이 상자 안에서만 스크롤된다 (내용은 JS가 채운다) -->
   <div class="donor-panel" id="donorPanel"></div>
+
+  <div class="thanks-row">
+    <p class="thanks-note" id="thanksNote">기억을 위한 마음을 보내주신 모든 분께 감사드립니다</p>
+    <img src="assets/camellia-bloom.png" alt="">
+  </div>
 
   <!-- Footer -->
   <footer class="footer">
@@ -155,96 +169,194 @@
 <script src="assets/fit-screen.js"></script>
 <script src="assets/lang-switch.js?v=3"></script>
 <script>
-  // tier: "high"(100만원 이상) / "mid"(10~99만원) / "low"(10만원 미만).
-  // 실제 후원 구간 정보를 알려주시면 각 이름에 채워 넣을게요 — 지금은 구간 없이 "전체"에만 표시됩니다.
+  // amountWon: 후원 금액(원 단위, 실제 후원 내역 그대로). 1만원 이상인 분만 금액을 표기하고,
+  // 1만원 미만인 분은 이름만 표기한다.
   const DONORS = [
-    { name: "한혜림" }, { name: "김나림" }, { name: "박세빈" },
-    { name: "김재연" }, { name: "양우철" }, { name: "이서연" },
-    { name: "장수아" }, { name: "윤정원" }, { name: "성민규" },
-    { name: "고아령" }, { name: "홍기범" }, { name: "류현진" },
-    { name: "박도윤" }, { name: "노시환" }
-    // ↓ 아래는 스크롤 동작을 보여주기 위한 임시 자리표시자입니다.
-    // 실제 후원자 명단(15번째 분부터)을 알려주시면 이 부분을 그대로 교체할게요.
-    ,
-    { name: "후원자 15" }, { name: "후원자 16" }, { name: "후원자 17" },
-    { name: "후원자 18" }, { name: "후원자 19" }, { name: "후원자 20" },
-    { name: "후원자 21" }, { name: "후원자 22" }, { name: "후원자 23" },
-    { name: "후원자 24" }, { name: "후원자 25" }, { name: "후원자 26" }
+    { name: "이경은", amountWon: 500000 },
+
+    { name: "김지민", amountWon: 100000 }, { name: "김정도", amountWon: 100000 },
+    { name: "김용택", amountWon: 100000 }, { name: "양유준", amountWon: 100000 },
+    { name: "윤정원", amountWon: 100000 }, { name: "고성표", amountWon: 100000 },
+    { name: "이창수", amountWon: 100000 }, { name: "김수열", amountWon: 100000 },
+    { name: "오윤성", amountWon: 100000 },
+
+    { name: "박세빈", amountWon: 51000 },
+    { name: "김상미", amountWon: 50000 }, { name: "송지은", amountWon: 50000 },
+    { name: "주홍재", amountWon: 50000 }, { name: "김남훈", amountWon: 50000 },
+    { name: "양예린", amountWon: 50000 }, { name: "홍성진", amountWon: 50000 },
+    { name: "양재혁", amountWon: 50000 }, { name: "김　민", amountWon: 50000 },
+    { name: "조현준", amountWon: 50000 }, { name: "강동희", amountWon: 50000 },
+    { name: "고예훈", amountWon: 50000 }, { name: "김수빈", amountWon: 50000 },
+    { name: "양준혁", amountWon: 50000 }, { name: "오청한", amountWon: 50000 },
+    { name: "김승희", amountWon: 50000 }, { name: "채호진", amountWon: 50000 },
+    { name: "김나경", amountWon: 50000 }, { name: "오화선", amountWon: 50000 },
+    { name: "이동현", amountWon: 50000 }, { name: "신민섭", amountWon: 50000 },
+    { name: "이건웅", amountWon: 50000 }, { name: "손세호", amountWon: 50000 },
+
+    { name: "허승현", amountWon: 44000 },
+    { name: "장동현", amountWon: 43000 }, { name: "임한성", amountWon: 43000 },
+    { name: "김　준", amountWon: 43000 }, { name: "이성호", amountWon: 43000 },
+    { name: "성민규", amountWon: 43000 }, { name: "김세헌", amountWon: 43000 },
+    { name: "박진우", amountWon: 30000 }, { name: "박건도", amountWon: 30000 },
+    { name: "김민규", amountWon: 30000 }, { name: "전호현", amountWon: 30000 },
+    { name: "신동원", amountWon: 30000 }, { name: "이제령", amountWon: 30000 },
+    { name: "강민지", amountWon: 30000 }, { name: "서재원", amountWon: 30000 },
+    { name: "박주영", amountWon: 30000 },
+    { name: "한정연", amountWon: 20000 }, { name: "양우철", amountWon: 20000 },
+    { name: "고다은", amountWon: 20000 }, { name: "김재연", amountWon: 20000 },
+    { name: "정승환", amountWon: 10403 }, { name: "김경진", amountWon: 10043 },
+    { name: "박경재", amountWon: 10043 },
+    { name: "고승철", amountWon: 10000 }, { name: "원준성", amountWon: 10000 },
+    { name: "강지환", amountWon: 10000 }, { name: "전진수", amountWon: 10000 },
+    { name: "김소희", amountWon: 10000 }, { name: "김지후", amountWon: 10000 },
+    { name: "박정연", amountWon: 10000 }, { name: "강야성", amountWon: 10000 },
+    { name: "고준혁", amountWon: 10000 }, { name: "한혜림", amountWon: 10000 },
+    { name: "김나림", amountWon: 10000 }, { name: "이지혁", amountWon: 10000 },
+    { name: "이상준", amountWon: 10000 }, { name: "강시후", amountWon: 10000 },
+    { name: "고아령", amountWon: 10000 }, { name: "양유하", amountWon: 10000 },
+    { name: "강광식", amountWon: 10000 }, { name: "고은정", amountWon: 10000 },
+    { name: "김다완", amountWon: 10000 }, { name: "고예리", amountWon: 10000 },
+    { name: "김혜원", amountWon: 10000 }, { name: "유서연", amountWon: 10000 },
+    { name: "임지훈", amountWon: 10000 }, { name: "서경훈", amountWon: 10000 },
+    { name: "좌혜진", amountWon: 10000 }, { name: "여준호", amountWon: 10000 },
+    { name: "박영선", amountWon: 10000 }, { name: "홍수지", amountWon: 10000 },
+    { name: "고효경", amountWon: 10000 }, { name: "강혜림", amountWon: 10000 },
+    { name: "오재원", amountWon: 10000 }, { name: "손민형", amountWon: 10000 },
+    { name: "강창훈", amountWon: 10000 },
+
+    // ---- 1만원 미만: 이름만 표기 ----
+    { name: "주홍재" }, { name: "장동현" }, { name: "오유성" },
+    { name: "윤태희" }, { name: "임태경" },
+    { name: "조준범" }, { name: "윤채은" }, { name: "오성현" },
+    { name: "이　수" }, { name: "김민채" }, { name: "고영민" },
+    { name: "홍기범" }, { name: "문강혁" }, { name: "김현규" },
+    { name: "이지은" }, { name: "한도훈" }, { name: "김동철" },
+    { name: "박준혁" },
+    { name: "박정민" }, { name: "최승진" }, { name: "강현준" },
+    { name: "윤영인" }, { name: "김민건" }, { name: "전세진" },
+    { name: "고보건" }, { name: "김은빈" }, { name: "최인영" },
+    { name: "이민욱" },
+    { name: "임동진" }, { name: "고민서" },
+    { name: "전성민" }, { name: "윤지혜" },
+    { name: "이은진" }, { name: "고승진" }, { name: "박승현" },
+    { name: "강다연" }, { name: "강지운" }, { name: "권경욱" },
+    { name: "강찬희" }, { name: "현권우" }, { name: "김의환" },
+    { name: "홍지형" },
+    { name: "김혁수" }
   ];
+
+  // 금액이 높은 순으로, 같은 금액끼리는 가나다순으로 정렬
+  // (구간은 금액대로 나뉘므로, 전체를 한 번만 정렬해두면 각 구간 안에서도 그대로 적용된다)
+  DONORS.sort(function (a, b) {
+    const aw = typeof a.amountWon === "number" ? a.amountWon : -1;
+    const bw = typeof b.amountWon === "number" ? b.amountWon : -1;
+    if (aw !== bw) return bw - aw;
+    return a.name.replace(/\s/g, "").localeCompare(b.name.replace(/\s/g, ""), "ko");
+  });
+
+  // 구간 경계(원 단위): 100만 / 50만 / 10만 / 5만 / 1만. 1만원 미만은 금액 없이 이름만.
+  const TIERS = [
+    { key: "t100", min: 1000000 },
+    { key: "t50", min: 500000 },
+    { key: "t10", min: 100000 },
+    { key: "t5", min: 50000 },
+    { key: "t1", min: 10000 },
+    { key: "under", min: 0 }
+  ];
+  function tierOf(d) {
+    if (typeof d.amountWon !== "number") return "under";
+    for (let i = 0; i < TIERS.length; i++) {
+      if (d.amountWon >= TIERS[i].min) return TIERS[i].key;
+    }
+    return "under";
+  }
 
   // ---------- 다국어 번역 (기계번역 초안 — 공개 전 원어민 검수 권장) ----------
   const I18N = {
     ko: {
       pageTitle: "후원자 명단",
       lede: "위령비와 디지털 아카이브는<br>후원자분들의 마음이 모여 만들어졌습니다.",
-      filters: { all: "전체", high: "100만원 이상", mid: "10~99만원", low: "10만원 미만" },
-      thanksNote: "기억을 위한 마음을 보내주신 모든 분께 감사드립니다.",
-      emptySuffix: " 구간 정보가<br>아직 등록되지 않았습니다."
+      thanksNote: "기억을 위한 마음을 보내주신 모든 분께 감사드립니다",
+      tiers: { t100: "100만원 이상", t50: "50만원 이상", t10: "10만원 이상", t5: "5만원 이상", t1: "1만원 이상", under: "1만원 미만" },
+      amount: function (w) { return w.toLocaleString("ko-KR") + "원"; }
     },
     en: {
       pageTitle: "List of Supporters",
       lede: "The memorial and this digital archive<br>were made possible by our supporters' generosity.",
-      filters: { all: "All", high: "₩1M+", mid: "₩100K–999K", low: "Under 100K" },
       thanksNote: "Thank you for contributing to this remembrance.",
-      emptySuffix: " tier information<br>has not been registered yet."
+      tiers: { t100: "₩1,000,000+", t50: "₩500,000+", t10: "₩100,000+", t5: "₩50,000+", t1: "₩10,000+", under: "Under ₩10,000" },
+      amount: function (w) { return "₩" + w.toLocaleString("en-US"); }
     },
     zh: {
       pageTitle: "捐助者名单",
       lede: "纪念碑与数字档案馆<br>是由各位捐助者的心意汇聚而成。",
-      filters: { all: "全部", high: "100万韩元以上", mid: "10~99万韩元", low: "10万韩元以下" },
       thanksNote: "感谢每一位为铭记历史献出心意的朋友。",
-      emptySuffix: " 区间的信息<br>尚未登记。"
+      tiers: { t100: "100万韩元以上", t50: "50万韩元以上", t10: "10万韩元以上", t5: "5万韩元以上", t1: "1万韩元以上", under: "1万韩元以下" },
+      amount: function (w) { return w.toLocaleString("zh-CN") + "韩元"; }
     },
     ja: {
       pageTitle: "後援者名簿",
       lede: "慰霊碑とデジタルアーカイブは、<br>後援者の皆様の心が集まって作られました。",
-      filters: { all: "全体", high: "100万ウォン超", mid: "10~99万ウォン", low: "10万ウォン未満" },
       thanksNote: "記憶のために心を寄せてくださった皆様に感謝します。",
-      emptySuffix: "区間の情報が<br>まだ登録されていません。"
+      tiers: { t100: "100万ウォン以上", t50: "50万ウォン以上", t10: "10万ウォン以上", t5: "5万ウォン以上", t1: "1万ウォン以上", under: "1万ウォン未満" },
+      amount: function (w) { return w.toLocaleString("ja-JP") + "ウォン"; }
     }
   };
 
   let currentLang = "ko";
 
   const donorPanel = document.getElementById("donorPanel");
-  const filterButtons = Array.from(document.querySelectorAll(".filter-row button"));
 
-  function render(filter) {
+  function render() {
     const t = I18N[currentLang] || I18N.ko;
-    const list = filter === "all" ? DONORS : DONORS.filter(function (d) { return d.tier === filter; });
     donorPanel.innerHTML = "";
 
-    if (list.length === 0) {
-      const empty = document.createElement("p");
-      empty.className = "donor-empty";
-      empty.innerHTML = t.filters[filter] + t.emptySuffix;
-      donorPanel.appendChild(empty);
-    } else {
-      const grid = document.createElement("div");
-      grid.className = "donor-grid";
-      list.forEach(function (d) {
-        const el = document.createElement("div");
-        el.className = "name";
-        el.textContent = d.name;
-        grid.appendChild(el);
-      });
-      donorPanel.appendChild(grid);
-    }
+    TIERS.forEach(function (tier) {
+      const list = DONORS.filter(function (d) { return tierOf(d) === tier.key; });
+      if (list.length === 0) return;
+
+      const section = document.createElement("div");
+      section.className = "tier-section";
+
+      const head = document.createElement("div");
+      head.className = "tier-head";
+      const headSpan = document.createElement("span");
+      headSpan.textContent = t.tiers[tier.key];
+      head.appendChild(headSpan);
+      section.appendChild(head);
+
+      if (tier.key === "under") {
+        const grid = document.createElement("div");
+        grid.className = "donor-grid";
+        list.forEach(function (d) {
+          const el = document.createElement("div");
+          el.className = "name";
+          el.textContent = d.name;
+          grid.appendChild(el);
+        });
+        section.appendChild(grid);
+      } else {
+        list.forEach(function (d) {
+          const row = document.createElement("div");
+          row.className = "donor-row";
+          const nm = document.createElement("span");
+          nm.className = "nm";
+          nm.textContent = d.name;
+          const amt = document.createElement("span");
+          amt.className = "amt";
+          amt.textContent = t.amount(d.amountWon);
+          row.appendChild(nm);
+          row.appendChild(amt);
+          section.appendChild(row);
+        });
+      }
+
+      donorPanel.appendChild(section);
+    });
+
     donorPanel.scrollTop = 0;
     if (window.__fitScreen) window.__fitScreen();
   }
-
-  function currentFilter() {
-    const active = filterButtons.find(function (b) { return b.classList.contains("active"); });
-    return active ? active.dataset.filter : "all";
-  }
-
-  filterButtons.forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      filterButtons.forEach(function (b) { b.classList.toggle("active", b === btn); });
-      render(btn.dataset.filter);
-    });
-  });
 
   window.__applyLanguage = function (lang) {
     currentLang = lang;
@@ -252,14 +364,10 @@
     document.getElementById("pageTitle").textContent = t.pageTitle;
     document.getElementById("lede").innerHTML = t.lede;
     document.getElementById("thanksNote").textContent = t.thanksNote;
-    filterButtons[0].textContent = t.filters.all;
-    filterButtons[1].textContent = t.filters.high;
-    filterButtons[2].textContent = t.filters.mid;
-    filterButtons[3].textContent = t.filters.low;
-    render(currentFilter());
+    render();
   };
 
-  render("all");
+  render();
 </script>
 </body>
 </html>
